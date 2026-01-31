@@ -1,3 +1,6 @@
+ctrl-r/package-lock.json
+ctrl-r/node_modules
+
 # Logs
 logs
 *.log
