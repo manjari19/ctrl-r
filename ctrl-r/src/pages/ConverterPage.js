@@ -3,7 +3,7 @@
 // ===============================
 
 import { useState } from "react";
-import { ConvertFile } from "../backend";
+import { ConvertFile } from "../backend/backend";
 
 export default function ConverterPage() {
   const [file, setFile] = useState(null);
