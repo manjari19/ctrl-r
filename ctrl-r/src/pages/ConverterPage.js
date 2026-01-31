@@ -3,6 +3,7 @@
 // ===============================
 
 import { useState } from "react";
+import { ConvertFile } from "../backend";
 
 export default function ConverterPage() {
   const [file, setFile] = useState(null);
@@ -18,6 +19,11 @@ export default function ConverterPage() {
 
   const handleConvert = () => {
     if (!file) return;
+
+    var currentFiletype = file.name.split(".").pop(); // make sure it's supported
+    var targetFiletype = "pdf";
+
+    ConvertFile(file, currentFiletype, targetFiletype);
 
     setLoading(true);
 
