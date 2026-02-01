@@ -7,6 +7,22 @@ import { File_Labels, File_Desc } from "./../backend/filedescs.js";
 import logo from "../assets/ctrlr-logo.png";
 import dropArt from "../assets/dragdrop-card.png";
 
+// Base URL for talking to the backend API.
+// In development, leave REACT_APP_API_BASE_URL unset so CRA's proxy
+// handles relative paths like "/upload".
+// In production (Netlify), set REACT_APP_API_BASE_URL to your Render URL,
+// e.g. "https://ctrl-r.onrender.com".
+const API_BASE =
+  (process.env.REACT_APP_API_BASE_URL &&
+    process.env.REACT_APP_API_BASE_URL.trim()) ||
+  "";
+
+function apiUrl(path) {
+  if (!path) return API_BASE;
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return (API_BASE || "") + p;
+}
+
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes)) return "—";
   if (bytes < 1024) return `${bytes} B`;
@@ -66,23 +82,6 @@ function isTextExt(ext) {
 }
 function isPdfExt(ext) {
   return ext === "pdf";
-}
-
-// Build a preview-friendly URL that works both in dev (React on :3000, API on :3001)
-// and in production (single origin).
-function resolvePreviewUrl(rawUrl) {
-  if (!rawUrl) return "";
-  // If it's already absolute (http/https), use as-is.
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
-
-  if (typeof window === "undefined") return rawUrl;
-
-  const origin = window.location.origin || "";
-  const backendOrigin = origin.includes(":3000")
-    ? origin.replace(":3000", ":3001")
-    : origin;
-
-  return backendOrigin + rawUrl;
 }
 
 export default function ConverterPage() {
@@ -152,7 +151,13 @@ export default function ConverterPage() {
     return filtered.length ? filtered : ["pdf"];
   }, [file, fileExt]);
 
-  const previewUrl = useMemo(() => resolvePreviewUrl(resultUrl), [resultUrl]);
+  const previewUrl = useMemo(() => {
+    if (!resultUrl) return "";
+    // If server ever returns an absolute URL, use it as-is.
+    if (/^https?:\/\//i.test(resultUrl)) return resultUrl;
+    // Otherwise, treat it as a backend-relative path.
+    return apiUrl(resultUrl);
+  }, [resultUrl]);
   const canSummarizeNow = useMemo(() => Boolean(previewUrl), [previewUrl]);
 
   const resetResultState = () => {
@@ -197,7 +202,7 @@ export default function ConverterPage() {
     formData.append("targetFormat", targetFormat);
 
     try {
-      const response = await fetch("/upload", {
+      const response = await fetch(apiUrl("/upload"), {
         method: "POST",
         body: formData,
       });
@@ -284,9 +289,7 @@ export default function ConverterPage() {
   const onOpenResult = async () => {
     if (!previewUrl && !resultUrl) return;
 
-    // Use the original relative URL if we have it so the CRA proxy
-    // keeps this same-origin in development.
-    const downloadPath = resultUrl || previewUrl;
+    const downloadPath = previewUrl || apiUrl(resultUrl || "");
 
     const base =
       (file?.name && file.name.replace(/\.[^.]+$/, "")) || "converted-file";
@@ -334,7 +337,7 @@ export default function ConverterPage() {
     setIsSummarizing(true);
 
     try {
-      const response = await fetch("/summarize", {
+      const response = await fetch(apiUrl("/summarize"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -375,7 +378,7 @@ export default function ConverterPage() {
     setChatInput("");
 
     try {
-      const response = await fetch("/chat", {
+      const response = await fetch(apiUrl("/chat"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
