@@ -102,6 +102,11 @@ export default function ConverterPage() {
   // converted preview state
   const [convertedTextPreview, setConvertedTextPreview] = useState("");
 
+  // summary state (to be wired to API later)
+  const [summaryText, setSummaryText] = useState("");
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summaryError, setSummaryError] = useState("");
+
   // Accept string derived from dictionary keys (no hardcoding)
   const ACCEPTED_EXTENSIONS = useMemo(() => {
     return Object.keys(acceptedfiletypes_dictionary || {})
@@ -144,6 +149,10 @@ export default function ConverterPage() {
     () => Boolean(previewUrl),
     [previewUrl]
   );
+  const hasSummaryState = useMemo(
+    () => Boolean(summaryText || summaryError || isSummarizing),
+    [summaryText, summaryError, isSummarizing]
+  );
 
   const resetResultState = () => {
     setIsConverting(false);
@@ -151,6 +160,9 @@ export default function ConverterPage() {
     setResultUrl("");
     setCopied(false);
     setConvertedTextPreview("");
+    setSummaryText("");
+    setIsSummarizing(false);
+    setSummaryError("");
   };
 
   const onFiles = (files) => {
@@ -251,7 +263,7 @@ export default function ConverterPage() {
 
   const onTrySample = () => alert("Sample file flow coming soon ✨");
 
-  const onConvert = () => {
+  const onGoToConversion = () => {
     if (!file) return;
     setStep("convert");
   };
@@ -266,9 +278,40 @@ export default function ConverterPage() {
     }
   };
 
-  const onOpenResult = () => {
-    if (!previewUrl) return;
-    window.open(previewUrl, "_blank", "noopener,noreferrer");
+  const onOpenResult = async () => {
+    if (!previewUrl && !resultUrl) return;
+
+    // Use the original relative URL if we have it so the CRA proxy
+    // keeps this same-origin in development.
+    const downloadPath = resultUrl || previewUrl;
+
+    const base =
+      (file?.name && file.name.replace(/\.[^.]+$/, "")) || "converted-file";
+    const safeExt = String(targetFormat || "").toLowerCase() || "pdf";
+    const filename = `${base}.${safeExt}`;
+
+    try {
+      const res = await fetch(downloadPath, { method: "GET" });
+      if (!res.ok) {
+        // Fallback: open in a new tab if the fetch fails.
+        window.open(downloadPath, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(downloadPath, "_blank", "noopener,noreferrer");
+    }
   };
 
   const onCopyLink = async () => {
@@ -283,8 +326,16 @@ export default function ConverterPage() {
   };
 
   const onSummarize = () => {
-    if (!previewUrl) return;
-    alert("Summarization coming soon ✨");
+    if (!previewUrl || isSummarizing) return;
+    setSummaryError("");
+    setIsSummarizing(true);
+
+    // Placeholder summary content – real API call will replace this.
+    const friendlyNote =
+      "A quick, human‑readable summary of this document will appear here once the AI integration is wired up. For now, imagine a neat, two‑paragraph overview with key bullet‑points.";
+
+    setSummaryText(friendlyNote);
+    setIsSummarizing(false);
   };
 
   const removeFile = () => {
@@ -420,30 +471,31 @@ export default function ConverterPage() {
                 )}
 
                 <div className="ctrlr-heroActions">
-                  {file ? (
-                    canSummarizeNow ? (
-                      <button
-                        className="ctrlr-browseBtn ctrlr-convertBtn"
-                        onClick={onSummarize}
-                        disabled={isConverting}
-                        title={isConverting ? "Processing…" : "Summarize this file"}
-                      >
-                        Summarize file contents
-                      </button>
-                    ) : (
-                      <button
-                        className="ctrlr-browseBtn ctrlr-convertBtn"
-                        onClick={onConvert}
-                        disabled={isConverting}
-                        title={isConverting ? "Conversion in progress" : "Go to conversion"}
-                      >
-                        {isConverting ? "Processing…" : "Ready to convert"}{" "}
-                        <span aria-hidden="true">➜</span>
-                      </button>
-                    )
-                  ) : (
+                  {!file && (
                     <button className="ctrlr-browseBtn" onClick={onBrowse}>
                       Browse files <span aria-hidden="true">➜</span>
+                    </button>
+                  )}
+
+                  {file && !previewUrl && (
+                    <button
+                      className="ctrlr-browseBtn ctrlr-convertBtn"
+                      onClick={onGoToConversion}
+                      disabled={isConverting}
+                      title={isConverting ? "Conversion in progress" : "Choose output format"}
+                    >
+                      Choose output format <span aria-hidden="true">➜</span>
+                    </button>
+                  )}
+
+                  {file && previewUrl && !hasSummaryState && canSummarizeNow && (
+                    <button
+                      className="ctrlr-browseBtn ctrlr-convertBtn"
+                      onClick={onSummarize}
+                      disabled={isConverting}
+                      title={isConverting ? "Processing…" : "Summarize this file"}
+                    >
+                      Summarize file contents
                     </button>
                   )}
 
@@ -459,6 +511,54 @@ export default function ConverterPage() {
                     </button>
                   )}
                 </div>
+
+                {hasSummaryState && (
+                  <div className="ctrlr-summaryCard ctrlr-summaryCard--inline">
+                    <div className="ctrlr-summaryInset">
+                      <div className="ctrlr-summaryHeader">
+                        <div>
+                          <div className="ctrlr-summaryEyebrow">AI preview</div>
+                          <h3 className="ctrlr-summaryTitle">Summary</h3>
+                        </div>
+                        <div
+                          className={
+                            "ctrlr-summaryChip" +
+                            (isSummarizing ? " ctrlr-summaryChip--busy" : "") +
+                            (summaryText ? " ctrlr-summaryChip--ready" : "")
+                          }
+                        >
+                          {summaryError
+                            ? "Error"
+                            : isSummarizing
+                            ? "Summarizing…"
+                            : summaryText
+                            ? "Ready"
+                            : "Not yet generated"}
+                        </div>
+                      </div>
+
+                      <div className="ctrlr-summaryBody">
+                        {summaryError && (
+                          <p className="ctrlr-summaryError">
+                            Something went wrong while summarizing. Try again in a moment.
+                          </p>
+                        )}
+
+                        {!summaryError && isSummarizing && !summaryText && (
+                          <p className="ctrlr-summaryPlaceholder">
+                            Summarizing this file… This will only take a moment.
+                          </p>
+                        )}
+
+                        {!summaryError && summaryText && (
+                          <p className="ctrlr-summaryText">
+                            {summaryText}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <input
                   ref={inputRef}
@@ -536,7 +636,7 @@ export default function ConverterPage() {
                           className="ctrlr-primaryBtn"
                           onClick={onOpenResult}
                         >
-                          Open / Download
+                          Download file
                         </button>
 
                         <button

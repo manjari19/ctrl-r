@@ -38,7 +38,7 @@ const upload = multer({ storage });
 // Serve converted files from a stable, same-origin URL so they can be embedded in iframes.
 app.use("/converted", express.static(CONVERTED_DIR));
 
-async function downloadConvertedFile(remoteUrl, targetExt) {
+async function downloadConvertedFile(remoteUrl, targetExt, originalName) {
   if (!remoteUrl) {
     throw new Error("Missing remote URL for converted file");
   }
@@ -47,8 +47,16 @@ async function downloadConvertedFile(remoteUrl, targetExt) {
     .replace(/[^a-z0-9]/gi, "")
     .toLowerCase() || "bin";
 
-  const id = crypto.randomBytes(8).toString("hex");
-  const filename = `${Date.now()}-${id}.${safeExt}`;
+  const base =
+    (originalName && path.parse(originalName).name) ||
+    "converted-file";
+
+  const safeBase = String(base)
+    .trim()
+    .replace(/[^a-z0-9_\-]+/gi, "_")
+    .replace(/^_+|_+$/g, "") || "converted-file";
+
+  const filename = `${safeBase}.${safeExt}`;
   const destPath = path.join(CONVERTED_DIR, filename);
 
   const client = remoteUrl.startsWith("https:") ? https : http;
@@ -129,7 +137,11 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     // Prefer a same-origin, cached URL for previews.
     let finalUrl = remoteUrl;
     try {
-      const stored = await downloadConvertedFile(remoteUrl, targetFormat);
+      const stored = await downloadConvertedFile(
+        remoteUrl,
+        targetFormat,
+        req.file.originalname
+      );
       finalUrl = stored.url;
     } catch (downloadErr) {
       console.error(

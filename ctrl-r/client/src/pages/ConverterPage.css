@@ -582,6 +582,90 @@
 }
 
 /* ---------------------------------- */
+/* Summary card                       */
+/* ---------------------------------- */
+.ctrlr-summaryCard {
+  padding: 18px;
+}
+
+.ctrlr-summaryInset {
+  border-radius: 18px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(94,107,79,0.16);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.10);
+  padding: 16px 18px 18px;
+  text-align: left;
+}
+
+.ctrlr-summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ctrlr-summaryEyebrow {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(47,52,55,0.55);
+}
+
+.ctrlr-summaryTitle {
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 860;
+  letter-spacing: -0.3px;
+  color: rgba(47,52,55,0.9);
+}
+
+.ctrlr-summaryChip {
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px dashed rgba(94,107,79,0.35);
+  background: rgba(227,234,220,0.55);
+  color: rgba(47,52,55,0.78);
+  white-space: nowrap;
+}
+
+.ctrlr-summaryChip--busy {
+  background: rgba(255, 240, 210, 0.9);
+  border-style: solid;
+}
+
+.ctrlr-summaryChip--ready {
+  background: rgba(201, 222, 190, 0.95);
+}
+
+.ctrlr-summaryBody {
+  border-radius: 14px;
+  background: rgba(247,247,242,0.95);
+  border: 1px solid rgba(0,0,0,0.04);
+  padding: 12px 12px 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(47,52,55,0.82);
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.ctrlr-summaryText {
+  margin: 0;
+}
+
+.ctrlr-summaryPlaceholder {
+  margin: 0;
+  color: rgba(47,52,55,0.62);
+}
+
+.ctrlr-summaryError {
+  margin: 0;
+  color: rgba(130,40,40,0.92);
+}
+
+/* ---------------------------------- */
 /* ✅ PREVIEW STYLES                  */
 /* ---------------------------------- */
 .ctrlr-previewWrap {
