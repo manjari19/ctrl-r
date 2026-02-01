@@ -66,6 +66,23 @@ function isPdfExt(ext) {
   return ext === "pdf";
 }
 
+// Build a preview-friendly URL that works both in dev (React on :3000, API on :3001)
+// and in production (single origin).
+function resolvePreviewUrl(rawUrl) {
+  if (!rawUrl) return "";
+  // If it's already absolute (http/https), use as-is.
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+
+  if (typeof window === "undefined") return rawUrl;
+
+  const origin = window.location.origin || "";
+  const backendOrigin = origin.includes(":3000")
+    ? origin.replace(":3000", ":3001")
+    : origin;
+
+  return backendOrigin + rawUrl;
+}
+
 export default function ConverterPage() {
   const inputRef = useRef(null);
 
@@ -121,6 +138,12 @@ export default function ConverterPage() {
     );
     return filtered.length ? filtered : ["pdf"];
   }, [file, fileExt]);
+
+  const previewUrl = useMemo(() => resolvePreviewUrl(resultUrl), [resultUrl]);
+  const canSummarizeNow = useMemo(
+    () => Boolean(previewUrl),
+    [previewUrl]
+  );
 
   const resetResultState = () => {
     setIsConverting(false);
@@ -187,11 +210,11 @@ export default function ConverterPage() {
 
     async function loadConvertedTextSnippet() {
       setConvertedTextPreview("");
-      if (!resultUrl) return;
+      if (!previewUrl) return;
       if (!isTextExt(targetFormat)) return;
 
       try {
-        const res = await fetch(resultUrl, { method: "GET" });
+        const res = await fetch(previewUrl, { method: "GET" });
         if (!res.ok) return;
         const txt = await res.text();
         if (!alive) return;
@@ -205,7 +228,7 @@ export default function ConverterPage() {
     return () => {
       alive = false;
     };
-  }, [resultUrl, targetFormat]);
+  }, [previewUrl, targetFormat]);
 
   const onBrowse = () => inputRef.current?.click();
   const onInputChange = (e) => onFiles(e.target.files);
@@ -244,19 +267,24 @@ export default function ConverterPage() {
   };
 
   const onOpenResult = () => {
-    if (!resultUrl) return;
-    window.open(resultUrl, "_blank", "noopener,noreferrer");
+    if (!previewUrl) return;
+    window.open(previewUrl, "_blank", "noopener,noreferrer");
   };
 
   const onCopyLink = async () => {
-    if (!resultUrl) return;
+    if (!previewUrl) return;
     try {
-      const ok = await copyToClipboard(resultUrl);
+      const ok = await copyToClipboard(previewUrl);
       setCopied(Boolean(ok));
       setTimeout(() => setCopied(false), 1400);
     } catch {
       setCopied(false);
     }
+  };
+
+  const onSummarize = () => {
+    if (!previewUrl) return;
+    alert("Summarization coming soon ✨");
   };
 
   const removeFile = () => {
@@ -265,10 +293,10 @@ export default function ConverterPage() {
     resetResultState();
   };
 
-  const shouldShowConvertedPreview = Boolean(file) && step === "convert" && Boolean(resultUrl);
+  const shouldShowConvertedPreview = Boolean(file) && step === "convert" && Boolean(previewUrl);
 
   const canPreviewConverted =
-    Boolean(resultUrl) &&
+    Boolean(previewUrl) &&
     (isPdfExt(targetFormat) || isImageExt(targetFormat) || isTextExt(targetFormat));
 
   return (
@@ -336,7 +364,7 @@ export default function ConverterPage() {
                           {isImageExt(targetFormat) && (
                             <img
                               className="ctrlr-previewImg"
-                              src={resultUrl}
+                              src={previewUrl}
                               alt="Converted output preview"
                             />
                           )}
@@ -345,7 +373,7 @@ export default function ConverterPage() {
                             <iframe
                               className="ctrlr-previewPdf"
                               title="Converted PDF preview"
-                              src={resultUrl}
+                              src={previewUrl}
                             />
                           )}
 
@@ -393,15 +421,26 @@ export default function ConverterPage() {
 
                 <div className="ctrlr-heroActions">
                   {file ? (
-                    <button
-                      className="ctrlr-browseBtn ctrlr-convertBtn"
-                      onClick={onConvert}
-                      disabled={isConverting}
-                      title={isConverting ? "Conversion in progress" : "Go to conversion"}
-                    >
-                      {isConverting ? "Processing…" : "Ready to convert"}{" "}
-                      <span aria-hidden="true">➜</span>
-                    </button>
+                    canSummarizeNow ? (
+                      <button
+                        className="ctrlr-browseBtn ctrlr-convertBtn"
+                        onClick={onSummarize}
+                        disabled={isConverting}
+                        title={isConverting ? "Processing…" : "Summarize this file"}
+                      >
+                        Summarize file contents
+                      </button>
+                    ) : (
+                      <button
+                        className="ctrlr-browseBtn ctrlr-convertBtn"
+                        onClick={onConvert}
+                        disabled={isConverting}
+                        title={isConverting ? "Conversion in progress" : "Go to conversion"}
+                      >
+                        {isConverting ? "Processing…" : "Ready to convert"}{" "}
+                        <span aria-hidden="true">➜</span>
+                      </button>
+                    )
                   ) : (
                     <button className="ctrlr-browseBtn" onClick={onBrowse}>
                       Browse files <span aria-hidden="true">➜</span>
@@ -430,20 +469,7 @@ export default function ConverterPage() {
                 />
 
                 <div className="ctrlr-meta">
-                  {file ? (
-                    <span className="ctrlr-filePill" title={file.name}>
-                      {file.name}
-                      <button
-                        type="button"
-                        aria-label="Remove file"
-                        onClick={removeFile}
-                        disabled={isConverting}
-                        title={isConverting ? "Wait for conversion to finish" : "Remove file"}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ) : (
+                  {!file && (
                     <span>
                       Supports <b>50+</b> formats • Documents, spreadsheets, images, CAD, and more.
                     </span>
@@ -505,11 +531,19 @@ export default function ConverterPage() {
 
                     {resultUrl ? (
                       <div className="ctrlr-actions ctrlr-actions--result">
-                        <button type="button" className="ctrlr-secondaryBtn" onClick={onOpenResult}>
+                        <button
+                          type="button"
+                          className="ctrlr-primaryBtn"
+                          onClick={onOpenResult}
+                        >
                           Open / Download
                         </button>
 
-                        <button type="button" className="ctrlr-primaryBtn" onClick={onCopyLink}>
+                        <button
+                          type="button"
+                          className="ctrlr-secondaryBtn"
+                          onClick={onCopyLink}
+                        >
                           {copied ? "Copied ✨" : "Copy link"}
                         </button>
                       </div>
