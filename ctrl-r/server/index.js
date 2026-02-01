@@ -247,13 +247,15 @@ app.post("/summarize", async (req, res) => {
     const base64Data = fileBuffer.toString("base64");
 
     const prompt =
-      "Summarize the attached document for a non‑expert reader.\n" +
+      "Summarize the attached document for a non-expert reader.\n" +
       "- Respond ONLY with bullet points, one per line, each starting with \"- \".\n" +
-      "- Do NOT include any headings or phrases like \"Here is a summary\".\n" +
-      "- Write EXACTLY 3 bullet points.\n" +
-      "- Each bullet should capture a different major idea or takeaway.\n" +
-      "- It is OK if the summary is longer than the original text.\n" +
-      "- Always end with a complete sentence; do not stop mid‑phrase.";
+      "- Write EXACTLY 2 or 3 bullet points.\n" +
+      "- Each bullet must be ONE sentence only.\n" +
+      "- Each bullet must be at most 15 words.\n" +
+      "- Each bullet should cover a different major takeaway.\n" +
+      "- Do NOT include headings, prefaces, or conclusions.\n" +
+      "- Do NOT use sub-bullets or multiple sentences per bullet.\n";
+
 
     const result = await geminiClient.generateContent({
       contents: [

@@ -266,8 +266,6 @@ export default function ConverterPage() {
     onFiles(e.dataTransfer.files);
   };
 
-  const onTrySample = () => alert("Sample file flow coming soon ✨");
-
   const onGoToConversion = () => {
     if (!file) return;
     setStep("convert");
@@ -444,20 +442,6 @@ export default function ConverterPage() {
             </span>
           </div>
 
-          <nav className="ctrlr-nav">
-            <a className="ctrlr-link" href="#about">
-              About
-            </a>
-            <a className="ctrlr-link" href="#samples">
-              Samples
-            </a>
-            <button className="ctrlr-sampleBtn" onClick={onTrySample}>
-              <span className="ctrlr-sampleIcon" aria-hidden="true">
-                ⟳
-              </span>
-              Try a Sample File
-            </button>
-          </nav>
         </div>
       </header>
 
