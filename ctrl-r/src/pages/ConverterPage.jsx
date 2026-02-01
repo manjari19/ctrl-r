@@ -100,7 +100,7 @@ export default function ConverterPage() {
               <p className="ctrlr-subtitle">
                 {file
                   ? "Next step: convert it into a modern PDF."
-                  : "WordPerfect, Lotus 1-2-3, and CAD files — converted to clean PDFs in seconds."}
+                  : "WordPerfect, OpenDocument, and CAD files — converted to clean PDFs in seconds."}
               </p>
 
               <button className="ctrlr-browseBtn" onClick={onBrowse}>
@@ -111,7 +111,7 @@ export default function ConverterPage() {
                 ref={inputRef}
                 type="file"
                 className="ctrlr-hiddenInput"
-                accept=".wpd,.wp,.wk1,.wk3,.123,.dwg,.doc,.docx"
+                accept=".wpd,.wp,.xls,.xlsx,.ods,.dwg,.doc,.docx"
                 onChange={onInputChange}
               />
 
