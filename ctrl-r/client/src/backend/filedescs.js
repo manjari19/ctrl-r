@@ -102,7 +102,6 @@ export const File_Desc={
     ppsx: "A newer PowerPoint slideshow file format that opens directly in presentation mode.",
 
     //manjari
-    log:"A file that contains a record of events that occur in an operating system or software application.",ppt: "An older Microsoft PowerPoint format used for slide presentations.",
     pptx: "The modern PowerPoint format used for creating and sharing presentations.",
     prn: "A printer output file containing formatted print instructions.",
     ps: "A PostScript file used for high-quality printing and publishing.",
