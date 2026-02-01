@@ -50,8 +50,16 @@ acceptedfiletypes_dictionary={
     "rtf":["html","jpg","pdf","txt"],
     "svg":["jpg","pdf","png","pnm","tiff","webp"],
     //tif and tiff is the same.
-    "tif":[]
-
-
-
+    "tif":["jpg","pdf","png","pnm","svg","tiff","webp"],
+    "tiff":["jpg","pdf","png","pnm","svg","tiff","webp"],
+    "txt":["jpg","pdf"],
+    //vsd and vsdx are somewhat the same
+    "vsd":["jpg","pdf","png","tiff"],
+    "vsdx":["jpg","pdf","png","tiff"],
+    "webp":["gif","jpg","pdf","png","pnm","svg","tiff"],
+    "wpd":["pdf"],
+    "xls":["xlsx","csv","jpg","pdf","png","tiff","webp"],
+    "xlsb":["csv","pdf"],
+    "xlsx":["csv","jpg","pdf","png","tiff","webp"],
+    "xltx":["pdf"]
 }
