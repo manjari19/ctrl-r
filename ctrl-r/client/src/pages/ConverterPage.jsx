@@ -455,7 +455,6 @@ export default function ConverterPage() {
               "ctrlr-stage2 " + (step === "convert" ? "ctrlr-stage2--convert" : "")
             }
           >
-            {/* LEFT CARD */}
             <section
               className={
                 "ctrlr-dropCard ctrlr-leftCard " +
@@ -605,7 +604,6 @@ export default function ConverterPage() {
               </div>
             </section>
 
-            {/* RIGHT SIDE */}
             {step === "convert" && (
               <aside className="ctrlr-rightStack" aria-live="polite">
                 <section className="ctrlr-dropCard ctrlr-rightCard">
@@ -698,7 +696,6 @@ export default function ConverterPage() {
                   </div>
                 </section>
 
-                {/* ✅ ONLY AFTER conversion: Summary replaces "About this file" */}
                 {resultUrl ? (
                   <section className="ctrlr-dropCard ctrlr-summaryCard">
                     <div className="ctrlr-summaryInset">
