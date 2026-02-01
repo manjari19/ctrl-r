@@ -57,7 +57,9 @@ async function copyToClipboard(text) {
 
 // Preview helpers
 function isImageExt(ext) {
-  return ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "tif", "tiff"].includes(ext);
+  return ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "tif", "tiff"].includes(
+    ext
+  );
 }
 function isTextExt(ext) {
   return ["txt", "md", "csv", "log", "xml", "json", "html", "htm"].includes(ext);
@@ -102,12 +104,12 @@ export default function ConverterPage() {
   // converted preview state
   const [convertedTextPreview, setConvertedTextPreview] = useState("");
 
-  // summary state (to be wired to API later)
+  // summary state
   const [summaryText, setSummaryText] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState("");
 
-  // lightweight chat state for follow‑up questions
+  // lightweight chat state for follow-up questions
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [isChatting, setIsChatting] = useState(false);
@@ -151,14 +153,7 @@ export default function ConverterPage() {
   }, [file, fileExt]);
 
   const previewUrl = useMemo(() => resolvePreviewUrl(resultUrl), [resultUrl]);
-  const canSummarizeNow = useMemo(
-    () => Boolean(previewUrl),
-    [previewUrl]
-  );
-  const hasSummaryState = useMemo(
-    () => Boolean(summaryText || summaryError || isSummarizing),
-    [summaryText, summaryError, isSummarizing]
-  );
+  const canSummarizeNow = useMemo(() => Boolean(previewUrl), [previewUrl]);
 
   const resetResultState = () => {
     setIsConverting(false);
@@ -377,10 +372,7 @@ export default function ConverterPage() {
     setChatError("");
     setIsChatting(true);
 
-    const newHistory = [
-      ...chatMessages,
-      { from: "user", text: question },
-    ];
+    const newHistory = [...chatMessages, { from: "user", text: question }];
     setChatMessages(newHistory);
     setChatInput("");
 
@@ -424,11 +416,14 @@ export default function ConverterPage() {
     resetResultState();
   };
 
-  const shouldShowConvertedPreview = Boolean(file) && step === "convert" && Boolean(previewUrl);
+  const shouldShowConvertedPreview =
+    Boolean(file) && step === "convert" && Boolean(previewUrl);
 
   const canPreviewConverted =
     Boolean(previewUrl) &&
-    (isPdfExt(targetFormat) || isImageExt(targetFormat) || isTextExt(targetFormat));
+    (isPdfExt(targetFormat) ||
+      isImageExt(targetFormat) ||
+      isTextExt(targetFormat));
 
   return (
     <div className="ctrlr-page">
@@ -468,7 +463,11 @@ export default function ConverterPage() {
 
       <div className="ctrlr-shell">
         <main className="ctrlr-center">
-          <div className={"ctrlr-stage2 " + (step === "convert" ? "ctrlr-stage2--convert" : "")}>
+          <div
+            className={
+              "ctrlr-stage2 " + (step === "convert" ? "ctrlr-stage2--convert" : "")
+            }
+          >
             {/* LEFT CARD */}
             <section
               className={
@@ -489,7 +488,11 @@ export default function ConverterPage() {
                       </div>
                     </div>
 
-                    <div className="ctrlr-previewFrame" role="region" aria-label="Converted file preview">
+                    <div
+                      className="ctrlr-previewFrame"
+                      role="region"
+                      aria-label="Converted file preview"
+                    >
                       {canPreviewConverted ? (
                         <>
                           {isImageExt(targetFormat) && (
@@ -516,10 +519,15 @@ export default function ConverterPage() {
                         </>
                       ) : (
                         <div className="ctrlr-previewEmpty">
-                          <div className="ctrlr-previewEmptyIcon" aria-hidden="true">
+                          <div
+                            className="ctrlr-previewEmptyIcon"
+                            aria-hidden="true"
+                          >
                             👀
                           </div>
-                          <div className="ctrlr-previewEmptyTitle">Preview not available</div>
+                          <div className="ctrlr-previewEmptyTitle">
+                            Preview not available
+                          </div>
                           <div className="ctrlr-previewEmptySub">
                             This output format can’t be previewed in-browser. Use{" "}
                             <b>Open / Download</b>.
@@ -537,7 +545,9 @@ export default function ConverterPage() {
                     />
 
                     <h1 className="ctrlr-title">
-                      {file ? "Ready to revive this file" : "Drag & drop a legacy file"}
+                      {file
+                        ? "Ready to revive this file"
+                        : "Drag & drop a legacy file"}
                     </h1>
 
                     <p className="ctrlr-subtitle">
@@ -562,20 +572,13 @@ export default function ConverterPage() {
                       className="ctrlr-browseBtn ctrlr-convertBtn"
                       onClick={onGoToConversion}
                       disabled={isConverting}
-                      title={isConverting ? "Conversion in progress" : "Choose output format"}
+                      title={
+                        isConverting
+                          ? "Conversion in progress"
+                          : "Choose output format"
+                      }
                     >
                       Choose output format <span aria-hidden="true">➜</span>
-                    </button>
-                  )}
-
-                  {file && previewUrl && !hasSummaryState && canSummarizeNow && (
-                    <button
-                      className="ctrlr-browseBtn ctrlr-convertBtn"
-                      onClick={onSummarize}
-                      disabled={isConverting}
-                      title={isConverting ? "Processing…" : "Summarize this file"}
-                    >
-                      Summarize file contents
                     </button>
                   )}
 
@@ -585,106 +588,16 @@ export default function ConverterPage() {
                       type="button"
                       onClick={removeFile}
                       disabled={isConverting}
-                      title={isConverting ? "Wait for conversion to finish" : "Choose another file"}
+                      title={
+                        isConverting
+                          ? "Wait for conversion to finish"
+                          : "Choose another file"
+                      }
                     >
                       Choose a different file
                     </button>
                   )}
                 </div>
-
-                {hasSummaryState && (
-                  <div className="ctrlr-summaryCard ctrlr-summaryCard--inline">
-                    <div className="ctrlr-summaryInset">
-                      <div className="ctrlr-summaryHeader">
-                        <div>
-                          <div className="ctrlr-summaryEyebrow">AI preview</div>
-                          <h3 className="ctrlr-summaryTitle">Summary</h3>
-                        </div>
-                        <div
-                          className={
-                            "ctrlr-summaryChip" +
-                            (isSummarizing ? " ctrlr-summaryChip--busy" : "") +
-                            (summaryText ? " ctrlr-summaryChip--ready" : "")
-                          }
-                        >
-                          {summaryError
-                            ? "Error"
-                            : isSummarizing
-                            ? "Summarizing…"
-                            : summaryText
-                            ? "Ready"
-                            : "Not yet generated"}
-                        </div>
-                      </div>
-
-                      <div className="ctrlr-summaryBody">
-                        {summaryError && (
-                          <p className="ctrlr-summaryError">
-                            Something went wrong while summarizing. Try again in a moment.
-                          </p>
-                        )}
-
-                        {!summaryError && isSummarizing && !summaryText && (
-                          <p className="ctrlr-summaryPlaceholder">
-                            Summarizing this file… This will only take a moment.
-                          </p>
-                        )}
-
-                        {!summaryError && summaryText && (
-                          <p className="ctrlr-summaryText">
-                            {summaryText}
-                          </p>
-                        )}
-
-                        {!!chatMessages.length && summaryText && (
-                          <div className="ctrlr-chatThread">
-                            {chatMessages.map((msg, idx) => (
-                              <div
-                                key={idx}
-                                className={
-                                  "ctrlr-chatRow " +
-                                  (msg.from === "assistant"
-                                    ? "ctrlr-chatRow--assistant"
-                                    : "ctrlr-chatRow--user")
-                                }
-                              >
-                                <div className="ctrlr-chatBubble">
-                                  {msg.text}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {summaryText && (
-                          <form className="ctrlr-chatForm" onSubmit={onChatSubmit}>
-                            <input
-                              type="text"
-                              className="ctrlr-chatInput"
-                              placeholder="Ask a follow‑up question about this file…"
-                              value={chatInput}
-                              onChange={(e) => setChatInput(e.target.value)}
-                              disabled={isChatting || !resultUrl}
-                            />
-                            <button
-                              type="submit"
-                              className="ctrlr-chatSendBtn"
-                              disabled={isChatting || !chatInput.trim() || !resultUrl}
-                            >
-                              {isChatting ? "Asking…" : "Ask"}
-                            </button>
-                          </form>
-                        )}
-
-                        {chatError && (
-                          <p className="ctrlr-summaryError" style={{ marginTop: 8 }}>
-                            {chatError}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 <input
                   ref={inputRef}
@@ -697,7 +610,8 @@ export default function ConverterPage() {
                 <div className="ctrlr-meta">
                   {!file && (
                     <span>
-                      Supports <b>50+</b> formats • Documents, spreadsheets, images, CAD, and more.
+                      Supports <b>50+</b> formats • Documents, spreadsheets,
+                      images, CAD, and more.
                     </span>
                   )}
                 </div>
@@ -719,7 +633,11 @@ export default function ConverterPage() {
                     <div className="ctrlr-inlineRow">
                       <div className="ctrlr-field">
                         <div className="ctrlr-formLabel">Detected</div>
-                        <div className={"ctrlr-formValue " + (file ? "ctrlr-pillValue" : "")}>
+                        <div
+                          className={
+                            "ctrlr-formValue " + (file ? "ctrlr-pillValue" : "")
+                          }
+                        >
                           {file ? detectedType : "—"}
                         </div>
                       </div>
@@ -735,7 +653,9 @@ export default function ConverterPage() {
                           value={targetFormat}
                           onChange={(e) => setTargetFormat(e.target.value)}
                           disabled={!file || isConverting || Boolean(resultUrl)}
-                          title={resultUrl ? "Choose a different file to convert again" : ""}
+                          title={
+                            resultUrl ? "Choose a different file to convert again" : ""
+                          }
                         >
                           {availableOutputs.map((fmt) => (
                             <option key={fmt} value={fmt}>
@@ -746,7 +666,9 @@ export default function ConverterPage() {
                       </div>
                     </div>
 
-                    {errorMsg && <div className="ctrlr-alert ctrlr-alert--error">{errorMsg}</div>}
+                    {errorMsg && (
+                      <div className="ctrlr-alert ctrlr-alert--error">{errorMsg}</div>
+                    )}
 
                     {resultUrl && !errorMsg && (
                       <div className="ctrlr-alert ctrlr-alert--success">
@@ -789,55 +711,162 @@ export default function ConverterPage() {
                   </div>
                 </section>
 
-                <section className="ctrlr-dropCard ctrlr-infoCard">
-                  <div className="ctrlr-infoInset">
-                    <div className="ctrlr-infoHeader">
-                      <span className="ctrlr-infoIcon" aria-hidden="true">
-                        <img className="ctrlr-infoLogo" src={logo} alt="" />
-                      </span>
-                      <h3 className="ctrlr-infoTitle">About this file</h3>
-                    </div>
-
-                    <div className="ctrlr-infoDivider" />
-
-                    <div className="ctrlr-infoBlock">
-                      <div className="ctrlr-infoLabel">File name</div>
-                      <div className="ctrlr-infoPill">{file ? file.name : "—"}</div>
-                    </div>
-
-                    <div className="ctrlr-infoDivider" />
-
-                    <div className="ctrlr-infoBlock">
-                      <div className="ctrlr-infoLabel">File type</div>
-                      <div className="ctrlr-infoText">{file ? typeDescription : "—"}</div>
-                    </div>
-
-                    <div className="ctrlr-infoDivider" />
-
-                    <div className="ctrlr-infoBlock ctrlr-infoTwoCol">
-                      <div>
-                        <div className="ctrlr-infoLabel">File size</div>
-                        <div className="ctrlr-infoStrong">
-                          {file ? formatBytes(file.size) : "—"}
+                {/* ✅ ONLY AFTER conversion: Summary replaces "About this file" */}
+                {resultUrl ? (
+                  <section className="ctrlr-dropCard ctrlr-summaryCard">
+                    <div className="ctrlr-summaryInset">
+                      <div className="ctrlr-summaryHeader">
+                        <div>
+                          <div className="ctrlr-summaryEyebrow">AI preview</div>
+                          <h3 className="ctrlr-summaryTitle">Summary</h3>
+                        </div>
+                        <div
+                          className={
+                            "ctrlr-summaryChip" +
+                            (isSummarizing ? " ctrlr-summaryChip--busy" : "") +
+                            (summaryText ? " ctrlr-summaryChip--ready" : "")
+                          }
+                        >
+                          {summaryError
+                            ? "Error"
+                            : isSummarizing
+                            ? "Summarizing…"
+                            : summaryText
+                            ? "Ready"
+                            : "Not yet generated"}
                         </div>
                       </div>
 
-                      <div>
-                        <div className="ctrlr-infoLabel">Created</div>
-                        <div className="ctrlr-infoStrong">
-                          {file ? createdLabelFromLastModified(file.lastModified) : "—"}
+                      <div className="ctrlr-summaryBody">
+                        {summaryError && (
+                          <p className="ctrlr-summaryError">
+                            Something went wrong while summarizing. Try again in a moment.
+                          </p>
+                        )}
+
+                        {!summaryError && isSummarizing && !summaryText && (
+                          <p className="ctrlr-summaryPlaceholder">
+                            Summarizing this file… This will only take a moment.
+                          </p>
+                        )}
+
+                        {!summaryError && summaryText && (
+                          <p className="ctrlr-summaryText">{summaryText}</p>
+                        )}
+
+                        {!!chatMessages.length && summaryText && (
+                          <div className="ctrlr-chatThread">
+                            {chatMessages.map((msg, idx) => (
+                              <div
+                                key={idx}
+                                className={
+                                  "ctrlr-chatRow " +
+                                  (msg.from === "assistant"
+                                    ? "ctrlr-chatRow--assistant"
+                                    : "ctrlr-chatRow--user")
+                                }
+                              >
+                                <div className="ctrlr-chatBubble">{msg.text}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {summaryText && (
+                          <form className="ctrlr-chatForm" onSubmit={onChatSubmit}>
+                            <input
+                              type="text"
+                              className="ctrlr-chatInput"
+                              placeholder="Ask a follow-up question about this file…"
+                              value={chatInput}
+                              onChange={(e) => setChatInput(e.target.value)}
+                              disabled={isChatting || !resultUrl}
+                            />
+                            <button
+                              type="submit"
+                              className="ctrlr-chatSendBtn"
+                              disabled={isChatting || !chatInput.trim() || !resultUrl}
+                            >
+                              {isChatting ? "Asking…" : "Ask"}
+                            </button>
+                          </form>
+                        )}
+
+                        {chatError && (
+                          <p className="ctrlr-summaryError" style={{ marginTop: 8 }}>
+                            {chatError}
+                          </p>
+                        )}
+
+                        {!summaryText &&
+                          !isSummarizing &&
+                          !summaryError &&
+                          canSummarizeNow && (
+                            <div style={{ marginTop: 12 }}>
+                              <button
+                                className="ctrlr-primaryBtn"
+                                type="button"
+                                onClick={onSummarize}
+                                disabled={isConverting}
+                                title={isConverting ? "Processing…" : "Summarize this file"}
+                                style={{ width: "100%" }}
+                              >
+                                Summarize file contents
+                              </button>
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  </section>
+                ) : (
+                  <section className="ctrlr-dropCard ctrlr-infoCard">
+                    <div className="ctrlr-infoInset">
+                      <div className="ctrlr-infoHeader">
+                        <span className="ctrlr-infoIcon" aria-hidden="true">
+                          <img className="ctrlr-infoLogo" src={logo} alt="" />
+                        </span>
+                        <h3 className="ctrlr-infoTitle">About this file</h3>
+                      </div>
+
+                      <div className="ctrlr-infoDivider" />
+
+                      <div className="ctrlr-infoBlock">
+                        <div className="ctrlr-infoLabel">File name</div>
+                        <div className="ctrlr-infoPill">{file ? file.name : "—"}</div>
+                      </div>
+
+                      <div className="ctrlr-infoDivider" />
+
+                      <div className="ctrlr-infoBlock">
+                        <div className="ctrlr-infoLabel">File type</div>
+                        <div className="ctrlr-infoText">{file ? typeDescription : "—"}</div>
+                      </div>
+
+                      <div className="ctrlr-infoDivider" />
+
+                      <div className="ctrlr-infoBlock ctrlr-infoTwoCol">
+                        <div>
+                          <div className="ctrlr-infoLabel">File size</div>
+                          <div className="ctrlr-infoStrong">
+                            {file ? formatBytes(file.size) : "—"}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="ctrlr-infoLabel">Created</div>
+                          <div className="ctrlr-infoStrong">
+                            {file ? createdLabelFromLastModified(file.lastModified) : "—"}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </section>
+                  </section>
+                )}
               </aside>
             )}
           </div>
 
-          <p className="ctrlr-tagline">
-            Old file formats aren’t broken—they’re just forgotten.
-          </p>
+          <p className="ctrlr-tagline">Old file formats aren’t broken—they’re just forgotten.</p>
         </main>
       </div>
     </div>
