@@ -8,27 +8,6 @@ import{File_Desc} from './../backend/filedescs.js';
 import logo from "../assets/ctrlr-logo.png";
 import dropArt from "../assets/dragdrop-card.png";
 
-const EXT_LABELS = {
-  wpd: "WordPerfect (.wpd)",
- // wp: "WordPerfect (.wp)",
-  xls: "Microsoft Excel (.xls)",
-  ods: "OpenDocument Spreadsheet (.ods)",
-  dwg: "AutoCAD (.dwg)",
-  doc: "Microsoft Word (.doc)",
-  docx: "Microsoft Word (.docx)",
-};
-
-const EXT_DESCRIPTIONS = {
-  wpd: "A WordPerfect document — once popular in offices and universities before modern formats became standard.",
- // wp: "A WordPerfect document — an older word processing format used widely before DOC/DOCX took over.",
-  xls: "An older Excel spreadsheet format — commonly used before .xlsx became the default.",
-  ods: "An OpenDocument spreadsheet — a standards-based format used by LibreOffice and similar tools.",
-  dwg: "An AutoCAD drawing — a common CAD format used in architecture and engineering workflows.",
-  doc: "A legacy Microsoft Word document — widely used before .docx became standard.",
-  docx: "A modern Microsoft Word document — widely supported across most word processors today.",
-};
-
-
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes)) return "—";
