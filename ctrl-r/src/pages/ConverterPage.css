@@ -61,7 +61,7 @@
   z-index: 5;
 
   width: 100%;
-  padding: 18px 0;          /* bar height */
+  padding: 18px 0;
   background: rgba(255, 255, 255, 0.14);
   border-bottom: 1px solid rgba(0,0,0,0.06);
   box-shadow: 0 14px 46px rgba(0,0,0,0.06);
@@ -69,9 +69,9 @@
 }
 
 .ctrlr-topbarInner {
-  max-width: 1400px;        /* content still centered */
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 56px;          /* not starting at very edge */
+  padding: 0 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -163,9 +163,11 @@
   padding: 90px 0 44px;
 }
 
-/* Bigger hero card */
+/* ---------- Cards ---------- */
+/* IMPORTANT: width is flexible so convert-mode max-width can shrink */
 .ctrlr-dropCard {
-  width: min(1100px, 94vw);
+  width: 100%;
+  max-width: 1100px;
   min-height: 480px;
   border-radius: 24px;
   background: var(--card-strong);
@@ -192,7 +194,7 @@
 }
 
 .ctrlr-dropArt {
-  width: 500px;            /* BIG */
+  width: 500px;
   height: auto;
   margin: 0 auto 30px;
   opacity: 0.98;
@@ -208,7 +210,6 @@
   color: rgba(47, 52, 55, 0.86);
 }
 
-/* ✅ New subtitle for better text */
 .ctrlr-subtitle {
   margin: 0 auto 26px;
   max-width: 720px;
@@ -277,6 +278,137 @@
   color: rgba(47, 52, 55, 0.50);
 }
 
+/* ---------------------------------- */
+/* TWO-CARD LAYOUT (convert mode)     */
+/* Starts centered (ONE card), then   */
+/* shifts left + shows RIGHT card     */
+/* ---------------------------------- */
+
+.ctrlr-stage2 {
+  width: 100%;
+  display: flex;
+  justify-content: center;     /* ✅ centered initially */
+  align-items: flex-start;
+  gap: 28px;
+  transition: padding 420ms ease, justify-content 420ms ease;
+}
+
+.ctrlr-leftCard {
+  width: 100%;
+  max-width: 1100px;
+  transition: max-width 420ms ease;
+}
+
+/* right card base (convert-only) */
+.ctrlr-rightCard {
+  width: 100%;
+  max-width: 520px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(20px);
+  transition: opacity 420ms ease, transform 420ms ease;
+}
+
+/* ✅ KEY FIX:
+   In UPLOAD mode, remove right card from layout completely
+   so the left card is perfectly centered. */
+.ctrlr-stage2:not(.ctrlr-stage2--convert) .ctrlr-rightCard {
+  display: none;
+}
+
+/* Convert mode: move layout left and reveal right card */
+.ctrlr-stage2--convert {
+  justify-content: flex-start;
+  padding-left: 90px;
+}
+
+/* Make left card skinnier only in convert mode */
+.ctrlr-stage2--convert .ctrlr-leftCard {
+  max-width: 720px;
+}
+
+/* Show right card in convert mode */
+.ctrlr-stage2--convert .ctrlr-rightCard {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+/* Optional: tighten inset padding in convert mode */
+.ctrlr-stage2--convert .ctrlr-leftCard .ctrlr-dropInset,
+.ctrlr-stage2--convert .ctrlr-rightCard .ctrlr-dropInset {
+  padding-left: 48px;
+  padding-right: 48px;
+}
+
+/* ---------------------------------- */
+/* RIGHT CARD CONTENT STYLES          */
+/* ---------------------------------- */
+
+.ctrlr-titleSmall {
+  font-size: 28px;
+  margin-bottom: 18px;
+}
+
+.ctrlr-formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.ctrlr-formLabel {
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.ctrlr-formValue {
+  font-weight: 700;
+}
+
+.ctrlr-select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.65);
+  outline: none;
+}
+
+.ctrlr-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.ctrlr-primaryBtn,
+.ctrlr-secondaryBtn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.ctrlr-primaryBtn {
+  flex: 1;
+}
+
+.ctrlr-secondaryBtn {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.ctrlr-primaryBtn:disabled,
+.ctrlr-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ctrlr-hint {
+  margin-top: 14px;
+  opacity: 0.65;
+}
+
 /* ---------- Responsive tweaks ---------- */
 @media (max-width: 720px) {
   .ctrlr-topbarInner {
@@ -306,5 +438,34 @@
 
   .ctrlr-dropArt {
     width: 180px;
+  }
+
+  /* On mobile, stack the cards naturally */
+  .ctrlr-stage2 {
+    flex-direction: column;
+    align-items: center;
+    padding-left: 0;
+  }
+
+  .ctrlr-stage2--convert {
+    justify-content: center;
+    padding-left: 0;
+  }
+
+  /* On mobile, show right card when converting (and only then) */
+  .ctrlr-stage2:not(.ctrlr-stage2--convert) .ctrlr-rightCard {
+    display: none;
+  }
+
+  .ctrlr-stage2--convert .ctrlr-rightCard {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .ctrlr-leftCard,
+  .ctrlr-rightCard {
+    max-width: 94vw;
   }
 }
