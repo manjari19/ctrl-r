@@ -2,13 +2,20 @@
 // File: src/pages/ConverterPage.jsx
 // ===============================
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConvertFile } from "../backend/backend";
 
 export default function ConverterPage() {
   const [file, setFile] = useState(null);
   const [converted, setConverted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch("/api") // The proxy forwards this to localhost:3001/api
+      .then((res) => res.json())
+      .then((data) => setData(data.message));
+  }, []);
 
   const handleUpload = (e) => {
     if (e.target.files.length > 0) {
@@ -48,6 +55,7 @@ export default function ConverterPage() {
           Convert WordPerfect and Lotus 1-2-3 files into modern PDFs with
           automatic summaries.
         </p>
+        <p>data: {data}</p>
       </header>
 
       {/* Main Layout */}
