@@ -1,13 +1,11 @@
 // File: src/pages/ConverterPage.jsx
-import { useRef, useState, useMemo, useEffect } from "react";
+import { useRef, useState, useMemo } from "react";
 import "./ConverterPage.css";
-import { acceptedfiletypes_dictionary } from './../backend/dict.js';
-import{File_Labels} from './../backend/filedescs.js';
-import{File_Desc} from './../backend/filedescs.js';
+import { acceptedfiletypes_dictionary } from "./../backend/dict.js";
+import { File_Labels, File_Desc } from "./../backend/filedescs.js";
 
 import logo from "../assets/ctrlr-logo.png";
 import dropArt from "../assets/dragdrop-card.png";
-
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes)) return "—";
@@ -28,23 +26,53 @@ function createdLabelFromLastModified(lastModified) {
   return `Created in ${year}`;
 }
 
+function pickDefaultOutput(inputExt, outputs) {
+  const inExt = String(inputExt || "").toLowerCase();
+  const list = Array.isArray(outputs)
+    ? outputs.map((x) => String(x).toLowerCase())
+    : ["pdf"];
+
+  if (list.includes("pdf")) return "pdf";
+  const firstDifferent = list.find((x) => x && x !== inExt);
+  if (firstDifferent) return firstDifferent;
+  return "pdf";
+}
+
+async function copyToClipboard(text) {
+  // Modern clipboard API
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+
+  // Fallback
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "absolute";
+  ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  const ok = document.execCommand("copy");
+  document.body.removeChild(ta);
+  return ok;
+}
 
 export default function ConverterPage() {
   const inputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
-  const [data, setData] = useState(null); // used to test server connection
-
-  // useEffect(() => {
-  //   fetch("/fileConversion/") // The proxy forwards this to localhost:3001/api
-  //     .then((res) => res.json())
-  //     .then((data) => setData(data.message));
-  // }, []);
 
   // "upload" | "convert"
   const [step, setStep] = useState("upload");
 
   const [targetFormat, setTargetFormat] = useState("pdf");
+
+  // conversion result state
+  const [isConverting, setIsConverting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [resultUrl, setResultUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const fileExt = useMemo(() => {
     if (!file?.name) return "";
@@ -62,38 +90,52 @@ export default function ConverterPage() {
   const typeDescription = useMemo(() => {
     if (!file) return "";
     return (
-       File_Desc[fileExt] ||
+      File_Desc[fileExt] ||
       "A legacy file format — often difficult to open with modern software."
     );
   }, [file, fileExt]);
 
   const availableOutputs = useMemo(() => {
     if (!file) return ["pdf"];
-    return acceptedfiletypes_dictionary[fileExt] || ["pdf"];
+    const outs = acceptedfiletypes_dictionary[fileExt] || ["pdf"];
+    // don’t allow output == input (prevents wpd->wpd etc.)
+    const filtered = outs.filter(
+      (x) => String(x).toLowerCase() !== String(fileExt).toLowerCase()
+    );
+    return filtered.length ? filtered : ["pdf"];
   }, [file, fileExt]);
+
+  const resetResultState = () => {
+    setIsConverting(false);
+    setErrorMsg("");
+    setResultUrl("");
+    setCopied(false);
+  };
 
   const onFiles = (files) => {
     if (!files || files.length === 0) return;
     const picked = files[0];
     setFile(picked);
 
-    // always return to upload view when picking a new file
     setStep("upload");
+    resetResultState();
 
     const ext = picked.name.split(".").pop()?.toLowerCase() || "";
     const outputs = acceptedfiletypes_dictionary[ext] || ["pdf"];
-    setTargetFormat(outputs[0]);
+    setTargetFormat(pickDefaultOutput(ext, outputs));
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      return;
-    }
+  const handleUploadAndConvert = async () => {
+    if (!file) return;
+
+    setIsConverting(true);
+    setErrorMsg("");
+    setResultUrl("");
+    setCopied(false);
 
     const formData = new FormData();
     formData.append("file", file);
-
-    console.log('FORM DATA', formData);
+    formData.append("targetFormat", targetFormat);
 
     try {
       const response = await fetch("/upload", {
@@ -101,17 +143,23 @@ export default function ConverterPage() {
         body: formData,
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('File uploaded successfully', result);
-        alert('File uploaded successfully!');
-      } else {
-        console.error('Upload failed:', response.statusText);
-        alert('File upload failed.');
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.error || payload?.message || response.statusText);
       }
-    } catch (error) {
-      console.error('Error during upload:', error);
-      alert('Error during upload.');
+
+      if (!payload?.url) {
+        throw new Error("No URL returned from server.");
+      }
+
+      setResultUrl(payload.url);
+      return payload.url;
+    } catch (err) {
+      setErrorMsg(err?.message || "Conversion failed.");
+      throw err;
+    } finally {
+      setIsConverting(false);
     }
   };
 
@@ -134,20 +182,37 @@ export default function ConverterPage() {
     onFiles(e.dataTransfer.files);
   };
 
-  const onTrySample = () => {
-    alert("Sample file flow coming soon ✨");
-  };
+  const onTrySample = () => alert("Sample file flow coming soon ✨");
 
   const onConvert = () => {
     if (!file) return;
-    handleUpload();
     setStep("convert");
   };
 
-  const onStartConversion = () => {
-    if (!file) return;
-    handleUpload();
-    alert(`Converting ${file.name} → ${targetFormat.toUpperCase()} (demo)...`);
+  const onStartConversion = async () => {
+    if (!file || isConverting) return;
+    try {
+      await handleUploadAndConvert();
+      // keep user on page; they can click Download/Open or Copy Link
+    } catch {
+      // errorMsg is already set
+    }
+  };
+
+  const onOpenResult = () => {
+    if (!resultUrl) return;
+    window.open(resultUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const onCopyLink = async () => {
+    if (!resultUrl) return;
+    try {
+      const ok = await copyToClipboard(resultUrl);
+      setCopied(Boolean(ok));
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (
@@ -217,8 +282,6 @@ export default function ConverterPage() {
                 <p className="ctrlr-subtitle">
                   {file ? "Next step: conversion." : "Your files — converted in seconds."}
                 </p>
-                {/* testing the server connection */}
-                <p>data: {data}</p>
 
                 {file ? (
                   <button
@@ -251,6 +314,7 @@ export default function ConverterPage() {
                         onClick={() => {
                           setFile(null);
                           setStep("upload");
+                          resetResultState();
                         }}
                       >
                         ×
@@ -258,23 +322,21 @@ export default function ConverterPage() {
                     </span>
                   ) : (
                     <span>
-                      Supported <b>.wpd</b>, <b>.xls</b>, <b>.ods</b>, <b>.dwg</b> • Privacy
-                      unlimited.
+                      Supported <b>.wpd</b>, <b>.xls</b>, <b>.ods</b>, <b>.dwg</b> •
+                      Privacy unlimited.
                     </span>
                   )}
                 </div>
               </div>
             </section>
 
-            {/* RIGHT SIDE: ONLY show after "Ready To Convert" */}
+            {/* RIGHT SIDE */}
             {step === "convert" && (
               <aside className="ctrlr-rightStack" aria-live="polite">
-                {/* Conversion options */}
                 <section className="ctrlr-dropCard ctrlr-rightCard">
                   <div className="ctrlr-dropInset">
                     <h2 className="ctrlr-title ctrlr-titleSmall">Conversion options</h2>
 
-                    {/* Detected + Convert-to on the same line */}
                     <div className="ctrlr-inlineRow">
                       <div className="ctrlr-field">
                         <div className="ctrlr-formLabel">Detected</div>
@@ -297,22 +359,60 @@ export default function ConverterPage() {
                           className="ctrlr-select"
                           value={targetFormat}
                           onChange={(e) => setTargetFormat(e.target.value)}
-                          disabled={!file}
+                          disabled={!file || isConverting}
                         >
                           {availableOutputs.map((fmt) => (
                             <option key={fmt} value={fmt}>
-                              {fmt.toUpperCase()}
+                              {String(fmt).toUpperCase()}
                             </option>
                           ))}
                         </select>
                       </div>
                     </div>
 
-                    <div className="ctrlr-actions">
+                    {/* Status + actions */}
+                    {errorMsg && (
+                      <p style={{ marginTop: 10 }}>
+                        <b>Error:</b> {errorMsg}
+                      </p>
+                    )}
+
+                    {resultUrl && (
+                      <div style={{ marginTop: 12 }}>
+                        <p style={{ marginBottom: 8 }}>
+                          <b>Converted file:</b>{" "}
+                          <a href={resultUrl} target="_blank" rel="noreferrer">
+                            {resultUrl}
+                          </a>
+                        </p>
+
+                        <div className="ctrlr-actions">
+                          <button
+                            type="button"
+                            className="ctrlr-secondaryBtn"
+                            onClick={onOpenResult}
+                          >
+                            Open / Download
+                          </button>
+
+                          <button
+                            type="button"
+                            className="ctrlr-primaryBtn"
+                            onClick={onCopyLink}
+                          >
+                            {copied ? "Copied!" : "Copy link"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Main actions */}
+                    <div className="ctrlr-actions" style={{ marginTop: 14 }}>
                       <button
                         type="button"
                         className="ctrlr-secondaryBtn"
                         onClick={() => setStep("upload")}
+                        disabled={isConverting}
                       >
                         ← Back
                       </button>
@@ -321,17 +421,19 @@ export default function ConverterPage() {
                         type="button"
                         className="ctrlr-primaryBtn"
                         onClick={onStartConversion}
-                        disabled={!file}
+                        disabled={!file || isConverting}
                       >
-                        Start conversion <span aria-hidden="true">➜</span>
+                        {isConverting ? "Converting..." : "Start conversion "}
+                        <span aria-hidden="true">➜</span>
                       </button>
                     </div>
 
-                    <p className="ctrlr-hint">Pick an output format, then start conversion.</p>
+                    <p className="ctrlr-hint">
+                      Pick an output format, then start conversion.
+                    </p>
                   </div>
                 </section>
 
-                {/* About this file */}
                 <section className="ctrlr-dropCard ctrlr-infoCard">
                   <div className="ctrlr-infoInset">
                     <div className="ctrlr-infoHeader">

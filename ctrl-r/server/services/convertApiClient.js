@@ -1,7 +1,10 @@
-const ConvertApi = require("convertapi");
+// server/services/convertApiClient.js
+const convertapiFactory = require("convertapi");
 
-const convertapi = new ConvertApi('sLWxDSAaL4XCSIN6Nb4NTVfOQkodGAb4');
+const secret = process.env.CONVERTAPI_SECRET;
+if (!secret) {
+  throw new Error("Missing CONVERTAPI_SECRET in server/.env");
+}
 
-module.exports = {
-    convertapi,
-};
+// Official usage: require("convertapi")("api_token")
+module.exports = convertapiFactory(secret);

@@ -1,32 +1,27 @@
+// server/services/convertFile.js
 const convertapi = require("./convertApiClient");
-const LotusFiletypes = require('./LotusFiletypes.js');
-const XLSX = require('xlsx');
-const fs = require('fs').promises;
 
-async function convertFile(file, currentFiletype, targetFiletype) {
+async function convertFile(filePath, sourceExt, targetExt) {
+  const src = String(sourceExt || "").replace(".", "").toLowerCase();
+  const dst = String(targetExt || "").replace(".", "").toLowerCase();
 
-//const currentFiletype = file.filename.split(".").pop();
-if (currentFiletype in LotusFiletypes) {
-    const workbook = XLSX.read(lotusFile, { type: 'buffer' });
-    XLSX.writeFileXLSX(workbook, "LotusXLSX");
-    const xlsxFile = fs.readFileSync("LotusXLSX");
-    fs.unlink("LotusXLSX");
-    file = xlsxFile;
-    currentFiletype = "xlsx";
+  if (!src || !dst) throw new Error(`Bad formats src="${src}" dst="${dst}"`);
+  if (src === dst) throw new Error(`Invalid conversion ${src} -> ${dst}`);
+
+  // ✅ ConvertAPI Node SDK: convert(toFormat, params, fromFormat?)
+  const result = await convertapi.convert(
+    dst,
+    { File: filePath, StoreFile: true },
+    src
+  );
+
+  // SDK sometimes uses `url` (lowercase). Be tolerant.
+  const file0 = result?.files?.[0];
+  const url = file0?.url || file0?.Url;
+
+  if (!url) throw new Error("ConvertAPI returned no output URL");
+
+  return url;
 }
 
-//let convertApi = ConvertApi.auth('sLWxDSAaL4XCSIN6Nb4NTVfOQkodGAb4');//put in api token
-let params = convertapi.createParams();
-params.add('File',file);
-let result=await convertapi.convert(currentFiletype,targetFiletype,params);
-let url = result.files[0].Url;
-console.log(url);
-
-  return {
-    url,
-  };
-}
-
-module.exports = {
-  convertFile,
-};
+module.exports = { convertFile };
