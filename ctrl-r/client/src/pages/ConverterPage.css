@@ -195,14 +195,14 @@
 .ctrlr-dropArt {
   width: 500px;
   height: auto;
-  margin: 0 auto 30px;
+  margin: 16px auto 30px;
   opacity: 0.98;
   user-select: none;
   -webkit-user-drag: none;
 }
 
 .ctrlr-title {
-  font-size: 40px;
+  font-size: 48px;
   font-weight: 650;
   letter-spacing: -0.8px;
   margin: 8px 0 14px;
@@ -212,7 +212,7 @@
 .ctrlr-subtitle {
   margin: 0 auto 26px;
   max-width: 720px;
-  font-size: 16px;
+  font-size: 24px;
   line-height: 1.55;
   color: rgba(47, 52, 55, 0.60);
 }
@@ -221,8 +221,8 @@
   border: 1px solid rgba(94, 107, 79, 0.30);
   background: linear-gradient(180deg, rgba(127,143,106,0.88), rgba(94,107,79,0.80));
   color: rgba(255, 255, 255, 0.94);
-  font-size: 16px;
-  padding: 14px 28px;
+  font-size: 28px;
+  padding: 28px 48px;
   border-radius: 12px;
   cursor: pointer;
   box-shadow: 0 14px 32px rgba(0,0,0,0.12);
@@ -240,7 +240,7 @@
 
 .ctrlr-meta {
   margin-top: 18px;
-  font-size: 14px;
+  font-size: 24px;
   color: rgba(47, 52, 55, 0.56);
 }
 
@@ -253,7 +253,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 13px;
+  padding: 18px 13px;
   border-radius: 999px;
   background: rgba(227,234,220,0.65);
   border: 1px solid rgba(94,107,79,0.22);
@@ -264,8 +264,9 @@
   border: none;
   background: rgba(255,255,255,0.55);
   border: 1px solid rgba(0,0,0,0.08);
-  width: 26px;
-  height: 26px;
+  font-size: 20px;
+  width: 48px;
+  height: 48px;
   border-radius: 999px;
   cursor: pointer;
   line-height: 1;
@@ -273,13 +274,10 @@
 
 .ctrlr-tagline {
   margin-top: 76px;
-  font-size: 20px;
+  font-size: 24px;
   color: rgba(47, 52, 55, 0.50);
 }
 
-/* ---------------------------------- */
-/* TWO-COLUMN LAYOUT (convert mode)   */
-/* ---------------------------------- */
 
 .ctrlr-stage2 {
   width: 100%;
@@ -352,20 +350,23 @@
 }
 
 .ctrlr-inlineRow {
+  font-size: 20px;
   display: grid;
+  align-items: center;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   margin: 14px 0 10px;
-  align-items: end;
 }
 
 .ctrlr-field {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  align-items: center;
 }
 
 .ctrlr-formLabel {
+  font-size: 25px;
   font-weight: 600;
   opacity: 0.75;
 }
@@ -386,6 +387,7 @@
 }
 
 .ctrlr-select {
+  font-size: 24px;
   width: 100%;
   padding: 12px 14px;
   border-radius: 14px;
@@ -403,8 +405,9 @@
 .ctrlr-primaryBtn,
 .ctrlr-secondaryBtn {
   border: none;
-  border-radius: 14px;
-  padding: 12px 14px;
+  border-radius: 34px;
+  padding: 16px 14px;
+  font-size: 26px;
   cursor: pointer;
 }
 
@@ -428,11 +431,6 @@
   cursor: not-allowed;
 }
 
-.ctrlr-hint {
-  margin-top: 14px;
-  opacity: 0.65;
-}
-
 
 .ctrlr-infoCard {
   padding: 22px;
@@ -454,8 +452,8 @@
 }
 
 .ctrlr-infoIcon {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   display: grid;
   place-items: center;
@@ -465,7 +463,7 @@
 
 .ctrlr-infoTitle {
   margin: 0;
-  font-size: 22px;
+  font-size: 32px;
   font-weight: 750;
   color: rgba(47, 52, 55, 0.86);
   letter-spacing: -0.3px;
@@ -484,7 +482,7 @@
 }
 
 .ctrlr-infoLabel {
-  font-size: 13px;
+  font-size: 20px;
   letter-spacing: 0.2px;
   font-weight: 700;
   color: rgba(47, 52, 55, 0.62);
@@ -509,7 +507,7 @@
 
 .ctrlr-infoText {
   color: rgba(47, 52, 55, 0.70);
-  font-size: 14px;
+  font-size: 20px;
   line-height: 1.5;
 }
 
@@ -519,13 +517,14 @@
 }
 
 .ctrlr-infoStrong {
+  font-size: 20px;
   font-weight: 800;
   color: rgba(47, 52, 55, 0.82);
 }
 
 .ctrlr-infoLogo {
-  width: 22px;
-  height: 22px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
   opacity: 0.95;
 }
