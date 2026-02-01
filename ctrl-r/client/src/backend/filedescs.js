@@ -1,7 +1,14 @@
 export const File_Labels = {
     ////Aeris
-    bmp:"Bitmap(.bmp)",
+   bmp:"Bitmap(.bmp)",
     csv:"Comma Separated Values(.csv)",
+    djvu:"DjVu[Deja Vu](.djvu)",
+    doc: "Microsoft Word (.doc)",
+    docx: "Microsoft Word (.docx)",
+    dot:"Mircosoft Word (.dot)",
+    dotx:"Mircosoft Word(.dotx)",
+    dwf:"AutoDesk-Design Web Format(.dwf)",
+    dwfx:"AtuoDesk-Design Web Format(.dwf)",
 
 
 
@@ -68,6 +75,14 @@ export const File_Labels = {
 export const File_Desc={
       ////Aeris
     bmp:"An image format devoloped by Microsoft-format used specfically for Windows applications.",
+    csv:"A plain text file that stores structured tabular data - very similar to Excel files. ",
+    djvu:"A computer file format that is used specfically for scanned documents.",
+    doc: "A legacy Microsoft Word document — widely used before .docx became standard.",
+    docx: "A modern Microsoft Word document — widely supported across most word processors today.",
+    dot:"A legacy Microsoft Word template document - used as a blueprint for doc and docx before dotx became standard.",
+    dotx:"A moderm Microsoft Word template document- used a blueprint for doc and docx files.",
+    dwf:" A secure, highly compressed file format developed by Autodesk for efficient sharing, viewing, and printing of 2D/3D CAD design data.",
+    dwfx:"Autodesk Design Web Format (DWF) file that uses Microsoft's XML Paper Specification (XPS), allowing 2D/3D design data to be shared, viewed, and printed easily across different platforms.",
     
 
 
