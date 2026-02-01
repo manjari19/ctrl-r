@@ -103,41 +103,27 @@ export const File_Desc={
 
 
 
-    ///widak
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ///widad
+    jfif: "An image file format based on the JPEG standard, commonly used for storing compressed photographic images.",
+    jpg: "A widely used compressed image format ideal for photographs and web images.",
+    jpeg: "A standard compressed image format commonly used for digital photos and online images.",
+    png: "A lossless image format that supports transparency and is commonly used for web graphics.",
+    key: "A presentation file format used by Apple Keynote for creating slideshows.",
+    pages: "A document file format used by Apple Pages for word processing.",
+    numbers: "A spreadsheet file format used by Apple Numbers for data organization and analysis.",
+    log: "A text-based file used to record system events, errors, or application activity.",
+    md: "A lightweight markup text format used for formatting documentation and README files.",
+    msg: "An email message file format used by Microsoft Outlook to store individual emails.",
+    mobi: "An eBook file format commonly used by older Amazon Kindle devices.",
+    odc: "An OpenDocument file format used to store charts created in office applications.",
+    odf: "An OpenDocument file format used to store mathematical formulas.",
+    odg: "An OpenDocument file format used for vector graphics and drawings.",
+    odp: "An OpenDocument file format used for presentation slides.",
+    ods: "An OpenDocument file format used for spreadsheets and tabular data.",
+    odt: "An OpenDocument file format used for text documents.",
+    potx: "A Microsoft PowerPoint template file used as a starting layout for presentations.",
+    pps: "A Microsoft PowerPoint slideshow file that opens directly in presentation mode.",
+    ppsx: "A newer PowerPoint slideshow file format that opens directly in presentation mode.",
 
     //manjari
     log:"A file that contains a record of events that occur in an operating system or software application.",ppt: "An older Microsoft PowerPoint format used for slide presentations.",
