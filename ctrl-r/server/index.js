@@ -10,6 +10,7 @@ const cors = require("cors");
 const fs = require("fs/promises");
 const fssync = require("fs");
 const crypto = require("crypto");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const { convertFile } = require("./services/convertFile.js");
 
@@ -94,6 +95,29 @@ async function downloadConvertedFile(remoteUrl, targetExt, originalName) {
   };
 }
 
+// Gemini client (for summarization)
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+const GEMINI_MODEL =
+  process.env.GEMINI_MODEL || "gemini-1.5-flash"; // can be overridden in .env
+
+let geminiClient = null;
+
+if (GEMINI_API_KEY) {
+  try {
+    geminiClient = new GoogleGenerativeAI(GEMINI_API_KEY).getGenerativeModel({
+      model: GEMINI_MODEL,
+    });
+    console.log(`Gemini client initialised with model "${GEMINI_MODEL}".`);
+  } catch (err) {
+    console.error("Failed to initialise Gemini client:", err);
+    geminiClient = null;
+  }
+} else {
+  console.warn(
+    "GEMINI_API_KEY not set – /summarize endpoint will return an error until this is configured."
+  );
+}
+
 // Optional health check
 app.get("/", (req, res) => res.json({ ok: true, service: "ctrl-r server" }));
 
@@ -166,6 +190,213 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     return res.status(500).json({
       message: "Conversion failed",
+      error: err?.message || String(err),
+    });
+  }
+});
+
+// Summarize an already-converted file using Gemini.
+app.post("/summarize", async (req, res) => {
+  try {
+    if (!geminiClient) {
+      return res.status(500).json({
+        message:
+          "Summarization is not configured. Set GEMINI_API_KEY in server/.env.",
+      });
+    }
+
+    const { url, targetFormat } = req.body || {};
+    if (!url) {
+      return res.status(400).json({ message: "Missing 'url' in request body." });
+    }
+
+    // Normalize to pathname in case client sent an absolute URL.
+    let pathname = url;
+    if (/^https?:\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        pathname = parsed.pathname;
+      } catch {
+        // fall back to original string
+        pathname = url;
+      }
+    }
+
+    if (!pathname.startsWith("/converted/")) {
+      return res.status(400).json({
+        message: "Only converted files can be summarized.",
+      });
+    }
+
+    const filename = path.basename(pathname);
+    const filePath = path.join(CONVERTED_DIR, filename);
+
+    const fileBuffer = await fs.readFile(filePath);
+
+    const extFromFormat = String(targetFormat || "").toLowerCase();
+    const extFromName = path.extname(filename).slice(1).toLowerCase();
+    const ext = extFromFormat || extFromName || "pdf";
+
+    const mimeType =
+      ext === "pdf"
+        ? "application/pdf"
+        : ext === "txt"
+        ? "text/plain"
+        : "application/octet-stream";
+
+    const base64Data = fileBuffer.toString("base64");
+
+    const prompt =
+      "You are summarizing a document for a non‑expert reader.\n" +
+      "- Write 2–4 short bullet points (each no more than 20 words).\n" +
+      "- Capture only the most important ideas, not minor details.\n" +
+      "- The entire summary must be under 120 words.\n" +
+      "- End with a complete sentence (no trailing '...' or unfinished phrases).";
+
+    const result = await geminiClient.generateContent({
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType,
+                data: base64Data,
+              },
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        maxOutputTokens: 256,
+        temperature: 0.4,
+      },
+    });
+
+    const text = result?.response?.text?.() || "";
+
+    return res.json({
+      summary: text,
+    });
+  } catch (err) {
+    console.error("Summarize error:", err);
+    return res.status(500).json({
+      message: "Summarization failed",
+      error: err?.message || String(err),
+    });
+  }
+});
+
+// Chat endpoint: ask follow‑up questions about a converted document.
+app.post("/chat", async (req, res) => {
+  try {
+    if (!geminiClient) {
+      return res.status(500).json({
+        message:
+          "Summarization/chat is not configured. Set GEMINI_API_KEY in server/.env.",
+      });
+    }
+
+    const { url, targetFormat, question, history } = req.body || {};
+
+    if (!url) {
+      return res.status(400).json({ message: "Missing 'url' in request body." });
+    }
+    if (!question || typeof question !== "string") {
+      return res
+        .status(400)
+        .json({ message: "Missing 'question' in request body." });
+    }
+
+    // Normalize to pathname in case client sent an absolute URL.
+    let pathname = url;
+    if (/^https?:\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        pathname = parsed.pathname;
+      } catch {
+        pathname = url;
+      }
+    }
+
+    if (!pathname.startsWith("/converted/")) {
+      return res.status(400).json({
+        message: "Only converted files can be used for chat.",
+      });
+    }
+
+    const filename = path.basename(pathname);
+    const filePath = path.join(CONVERTED_DIR, filename);
+
+    const fileBuffer = await fs.readFile(filePath);
+
+    const extFromFormat = String(targetFormat || "").toLowerCase();
+    const extFromName = path.extname(filename).slice(1).toLowerCase();
+    const ext = extFromFormat || extFromName || "pdf";
+
+    const mimeType =
+      ext === "pdf"
+        ? "application/pdf"
+        : ext === "txt"
+        ? "text/plain"
+        : "application/octet-stream";
+
+    const base64Data = fileBuffer.toString("base64");
+
+    // Build conversation history for Gemini
+    const contents = [];
+
+    const systemInstruction =
+      "You are a helpful assistant answering questions about the attached document. " +
+      "Base your answers only on the document content. If the answer is not in the document, say you don't know.";
+
+    contents.push({
+      role: "user",
+      parts: [
+        { text: systemInstruction },
+        {
+          inlineData: {
+            mimeType,
+            data: base64Data,
+          },
+        },
+      ],
+    });
+
+    if (Array.isArray(history)) {
+      for (const msg of history.slice(-6)) {
+        if (!msg || typeof msg.text !== "string") continue;
+        const role = msg.from === "assistant" ? "model" : "user";
+        contents.push({
+          role,
+          parts: [{ text: msg.text }],
+        });
+      }
+    }
+
+    contents.push({
+      role: "user",
+      parts: [{ text: question }],
+    });
+
+    const result = await geminiClient.generateContent({
+      contents,
+      generationConfig: {
+        maxOutputTokens: 256,
+        temperature: 0.4,
+      },
+    });
+
+    const text = result?.response?.text?.() || "";
+
+    return res.json({
+      answer: text,
+    });
+  } catch (err) {
+    console.error("Chat error:", err);
+    return res.status(500).json({
+      message: "Chat request failed",
       error: err?.message || String(err),
     });
   }

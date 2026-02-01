@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/generative-ai": "^0.8.0",
     "convertapi": "^1.15.0",
     "convertapi-js": "~1.1",
     "cors": "^2.8.6",

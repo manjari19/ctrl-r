@@ -107,6 +107,12 @@ export default function ConverterPage() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState("");
 
+  // lightweight chat state for follow‑up questions
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
+  const [isChatting, setIsChatting] = useState(false);
+  const [chatError, setChatError] = useState("");
+
   // Accept string derived from dictionary keys (no hardcoding)
   const ACCEPTED_EXTENSIONS = useMemo(() => {
     return Object.keys(acceptedfiletypes_dictionary || {})
@@ -163,6 +169,10 @@ export default function ConverterPage() {
     setSummaryText("");
     setIsSummarizing(false);
     setSummaryError("");
+    setChatInput("");
+    setChatMessages([]);
+    setIsChatting(false);
+    setChatError("");
   };
 
   const onFiles = (files) => {
@@ -325,17 +335,87 @@ export default function ConverterPage() {
     }
   };
 
-  const onSummarize = () => {
-    if (!previewUrl || isSummarizing) return;
+  const onSummarize = async () => {
+    if (!resultUrl || isSummarizing) return;
     setSummaryError("");
     setIsSummarizing(true);
 
-    // Placeholder summary content – real API call will replace this.
-    const friendlyNote =
-      "A quick, human‑readable summary of this document will appear here once the AI integration is wired up. For now, imagine a neat, two‑paragraph overview with key bullet‑points.";
+    try {
+      const response = await fetch("/summarize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: resultUrl,
+          targetFormat,
+        }),
+      });
 
-    setSummaryText(friendlyNote);
-    setIsSummarizing(false);
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.error || payload?.message || "Summarization failed."
+        );
+      }
+
+      const text = payload?.summary || "";
+      setSummaryText(text || "No summary text was returned.");
+    } catch (err) {
+      setSummaryError(err?.message || "Summarization failed.");
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  const onChatSubmit = async (event) => {
+    if (event) event.preventDefault();
+    const question = chatInput.trim();
+    if (!question || !resultUrl || isChatting) return;
+
+    setChatError("");
+    setIsChatting(true);
+
+    const newHistory = [
+      ...chatMessages,
+      { from: "user", text: question },
+    ];
+    setChatMessages(newHistory);
+    setChatInput("");
+
+    try {
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: resultUrl,
+          targetFormat,
+          question,
+          history: newHistory,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.error || payload?.message || "Chat request failed."
+        );
+      }
+
+      const answer = payload?.answer || "";
+      setChatMessages((prev) => [
+        ...prev,
+        { from: "assistant", text: answer || "No answer text was returned." },
+      ]);
+    } catch (err) {
+      setChatError(err?.message || "Chat request failed.");
+    } finally {
+      setIsChatting(false);
+    }
   };
 
   const removeFile = () => {
@@ -553,6 +633,50 @@ export default function ConverterPage() {
                         {!summaryError && summaryText && (
                           <p className="ctrlr-summaryText">
                             {summaryText}
+                          </p>
+                        )}
+
+                        {!!chatMessages.length && (
+                          <div className="ctrlr-chatThread">
+                            {chatMessages.map((msg, idx) => (
+                              <div
+                                key={idx}
+                                className={
+                                  "ctrlr-chatRow " +
+                                  (msg.from === "assistant"
+                                    ? "ctrlr-chatRow--assistant"
+                                    : "ctrlr-chatRow--user")
+                                }
+                              >
+                                <div className="ctrlr-chatBubble">
+                                  {msg.text}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <form className="ctrlr-chatForm" onSubmit={onChatSubmit}>
+                          <input
+                            type="text"
+                            className="ctrlr-chatInput"
+                            placeholder="Ask a follow‑up question about this file…"
+                            value={chatInput}
+                            onChange={(e) => setChatInput(e.target.value)}
+                            disabled={isChatting || !resultUrl}
+                          />
+                          <button
+                            type="submit"
+                            className="ctrlr-chatSendBtn"
+                            disabled={isChatting || !chatInput.trim() || !resultUrl}
+                          >
+                            {isChatting ? "Asking…" : "Ask"}
+                          </button>
+                        </form>
+
+                        {chatError && (
+                          <p className="ctrlr-summaryError" style={{ marginTop: 8 }}>
+                            {chatError}
                           </p>
                         )}
                       </div>
