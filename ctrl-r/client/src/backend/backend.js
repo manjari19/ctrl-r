@@ -26,8 +26,6 @@ export const ConvertFile = async (file, currentFiletype, targetFiletype) => {
     //     currentFiletype = "xlsx";
     // }
 
-    console.log(acceptedfiletypes_dictionary);
-
     if (currentFiletype in acceptedfiletypes_dictionary) {
         let convertApi=ConvertApi.auth('sLWxDSAaL4XCSIN6Nb4NTVfOQkodGAb4');//put in api token
         let params = convertApi.createParams();
