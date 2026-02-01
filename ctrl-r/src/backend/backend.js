@@ -15,7 +15,7 @@ export const ConvertFile = async (file, currentFiletype, targetFiletype) => {
     let result=await convertApi.convert(currentFiletype,targetFiletype,params);
     let url = result.files[0].Url;
     console.log(url);
-
+    return url;
 }
 
 
