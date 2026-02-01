@@ -153,10 +153,31 @@ export default function ConverterPage() {
 
   const previewUrl = useMemo(() => {
     if (!resultUrl) return "";
+
     // If server ever returns an absolute URL, use it as-is.
     if (/^https?:\/\//i.test(resultUrl)) return resultUrl;
+
+    const path = resultUrl.startsWith("/") ? resultUrl : `/${resultUrl}`;
+
+    // In local development, when API_BASE is empty and the React dev server
+    // is running on a different port from the backend, requests like
+    // "/converted/xyz.pdf" can accidentally hit the frontend instead of the
+    // Express server. That makes the preview iframe show the whole app
+    // instead of the actual PDF.
+    //
+    // To avoid that, talk directly to the Node server on port 3001 for
+    // converted assets when we're in development and no explicit API_BASE
+    // has been configured.
+    if (
+      process.env.NODE_ENV === "development" &&
+      !API_BASE &&
+      path.startsWith("/converted/")
+    ) {
+      return `http://localhost:3001${path}`;
+    }
+
     // Otherwise, treat it as a backend-relative path.
-    return apiUrl(resultUrl);
+    return apiUrl(path);
   }, [resultUrl]);
   const canSummarizeNow = useMemo(() => Boolean(previewUrl), [previewUrl]);
 
@@ -279,6 +300,8 @@ export default function ConverterPage() {
   const onStartConversion = async () => {
     if (!file || isConverting) return;
     try {
+      // Make sure we are in "convert" mode for the preview layout.
+      setStep("convert");
       await handleUploadAndConvert();
       // left side will automatically switch to preview because resultUrl becomes set
     } catch {
@@ -430,8 +453,7 @@ export default function ConverterPage() {
     }
   };
 
-  const shouldShowConvertedPreview =
-    Boolean(file) && step === "convert" && Boolean(previewUrl);
+  const shouldShowConvertedPreview = Boolean(file) && Boolean(previewUrl);
 
   const canPreviewConverted =
     Boolean(previewUrl) &&
@@ -616,6 +638,17 @@ export default function ConverterPage() {
                       Supports <b>50+</b> formats • Documents, spreadsheets,
                       images, CAD, and more.
                     </span>
+                  )}
+
+                  {file && (
+                    <div className="ctrlr-selectedFilePill">
+                      <span className="ctrlr-selectedFileLabel">
+                        Selected file:
+                      </span>
+                      <span className="ctrlr-selectedFileName">
+                        {file.name}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>

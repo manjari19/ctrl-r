@@ -278,6 +278,29 @@
   font-weight: 700;
 }
 
+.ctrlr-selectedFilePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(227, 234, 220, 0.85);
+  border: 1px solid rgba(94, 107, 79, 0.3);
+  color: rgba(47, 52, 55, 0.86);
+}
+
+.ctrlr-selectedFileLabel {
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(47, 52, 55, 0.6);
+}
+
+.ctrlr-selectedFileName {
+  font-weight: 750;
+}
+
 .ctrlr-filePill {
   display: inline-flex;
   align-items: center;
