@@ -1,6 +1,7 @@
 // File: src/pages/ConverterPage.jsx
 import { useRef, useState, useMemo } from "react";
 import "./ConverterPage.css";
+import { acceptedfiletypes_dictionary } from './../backend/dict.js'
 
 import logo from "../assets/ctrlr-logo.png";
 import dropArt from "../assets/dragdrop-card.png";
@@ -54,6 +55,7 @@ function createdLabelFromLastModified(lastModified) {
   return `Created in ${year}`;
 }
 
+
 export default function ConverterPage() {
   const inputRef = useRef(null);
   const [file, setFile] = useState(null);
@@ -87,7 +89,7 @@ export default function ConverterPage() {
 
   const availableOutputs = useMemo(() => {
     if (!file) return ["pdf"];
-    return EXT_OUTPUTS[fileExt] || ["pdf"];
+    return acceptedfiletypes_dictionary[fileExt] || ["pdf"];
   }, [file, fileExt]);
 
   const onFiles = (files) => {
@@ -99,7 +101,7 @@ export default function ConverterPage() {
     setStep("upload");
 
     const ext = picked.name.split(".").pop()?.toLowerCase() || "";
-    const outputs = EXT_OUTPUTS[ext] || ["pdf"];
+    const outputs = acceptedfiletypes_dictionary[ext] || ["pdf"];
     setTargetFormat(outputs[0]);
   };
 
