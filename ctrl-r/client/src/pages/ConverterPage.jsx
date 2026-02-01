@@ -6,6 +6,8 @@ import { File_Labels, File_Desc } from "./../backend/filedescs.js";
 
 import logo from "../assets/ctrlr-logo.png";
 import dropArt from "../assets/dragdrop-card.png";
+import sampleWpd from "../assets/demo.wpd";
+import sampleOds from "../assets/market-budgeting.ods";
 
 // Base URL for talking to the backend API.
 // In development, leave REACT_APP_API_BASE_URL unset so CRA's proxy
@@ -209,6 +211,23 @@ export default function ConverterPage() {
     setTargetFormat(pickDefaultOutput(ext, outputs));
   };
 
+  // Load one of our bundled sample files, turn it into a File,
+  // and feed it through the same flow as a user-uploaded file.
+  const loadSampleFile = async (assetUrl, filename) => {
+    try {
+      const res = await fetch(assetUrl);
+      if (!res.ok) {
+        throw new Error("Failed to load sample file.");
+      }
+      const blob = await res.blob();
+      const fileFromSample = new File([blob], filename, { type: blob.type });
+      onFiles([fileFromSample]);
+    } catch (err) {
+      console.error("Sample file error:", err);
+      setErrorMsg("Could not load sample file. Please try again.");
+    }
+  };
+
   const handleUploadAndConvert = async () => {
     if (!file) return;
 
@@ -296,6 +315,12 @@ export default function ConverterPage() {
     if (!file) return;
     setStep("convert");
   };
+
+  const onSampleWpdClick = () =>
+    loadSampleFile(sampleWpd, "sample.wpd");
+
+  const onSampleOdsClick = () =>
+    loadSampleFile(sampleOds, "market-budgeting.ods");
 
   const onStartConversion = async () => {
     if (!file || isConverting) return;
@@ -592,6 +617,25 @@ export default function ConverterPage() {
                     </button>
                   )}
 
+                  {!file && (
+                    <div className="ctrlr-sampleRow">
+                      <button
+                        type="button"
+                        className="ctrlr-sampleBtn"
+                        onClick={onSampleWpdClick}
+                      >
+                        Try sample WordPerfect (.wpd)
+                      </button>
+                      <button
+                        type="button"
+                        className="ctrlr-sampleBtn"
+                        onClick={onSampleOdsClick}
+                      >
+                        Try sample spreadsheet (.ods)
+                      </button>
+                    </div>
+                  )}
+
                   {file && !previewUrl && (
                     <button
                       className="ctrlr-browseBtn ctrlr-convertBtn"
@@ -636,7 +680,7 @@ export default function ConverterPage() {
                   {!file && (
                     <span>
                       Supports <b>50+</b> formats • Documents, spreadsheets,
-                      images, CAD, and more.
+                      images, and more.
                     </span>
                   )}
 

@@ -127,7 +127,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: 18px;
   padding: 11px 14px;
   border-radius: 12px;
   border: 1px solid rgba(94, 107, 79, 0.22);
@@ -276,6 +276,14 @@
 .ctrlr-meta b {
   color: rgba(47, 52, 55, 0.72);
   font-weight: 700;
+}
+
+.ctrlr-sampleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  justify-content: center;
 }
 
 .ctrlr-selectedFilePill {
