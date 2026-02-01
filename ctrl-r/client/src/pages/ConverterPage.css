@@ -10,7 +10,7 @@
 
   --brand-accent: #89986d;
 
-  --card-strong: rgba(255, 255, 255, 0.7);
+  --card-strong: rgba(255, 255, 255, 0.72);
 
   --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
     "Apple Color Emoji", "Segoe UI Emoji";
@@ -37,12 +37,12 @@
   opacity: 0.9;
 }
 
-/* Decorative corner blobs (stand-in leaves) */
+/* Decorative corner blobs */
 .ctrlr-leaf {
   position: absolute;
   width: 440px;
   height: 440px;
-  opacity: 0.20;
+  opacity: 0.18;
   pointer-events: none;
   background:
     radial-gradient(circle at 35% 40%, rgba(127,143,106,0.35), rgba(127,143,106,0) 55%),
@@ -59,7 +59,6 @@
 .ctrlr-topbar {
   position: relative;
   z-index: 5;
-
   width: 100%;
   padding: 18px 0;
   background: rgba(255, 255, 255, 0.14);
@@ -84,14 +83,14 @@
 }
 
 .ctrlr-logo {
-  width: 70px;
-  height: 70px;
+  width: 66px;
+  height: 66px;
   object-fit: contain;
 }
 
 .ctrlr-name {
   font-size: 24px;
-  font-weight: 750;
+  font-weight: 760;
   letter-spacing: -0.5px;
   display: inline-flex;
   align-items: baseline;
@@ -99,16 +98,16 @@
 }
 
 .ctrlr-nameMain { color: rgba(47, 52, 55, 0.9); }
-.ctrlr-nameAccent { color: var(--brand-accent); font-weight: 850; }
+.ctrlr-nameAccent { color: var(--brand-accent); font-weight: 880; }
 
 .ctrlr-nav {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 18px;
 }
 
 .ctrlr-link {
-  color: rgba(47, 52, 55, 0.70);
+  color: rgba(47, 52, 55, 0.68);
   text-decoration: none;
   font-size: 14px;
   padding: 8px 10px;
@@ -125,12 +124,13 @@
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  padding: 11px 16px;
+  padding: 11px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(94, 107, 79, 0.25);
-  background: linear-gradient(180deg, rgba(227,234,220,0.90), rgba(215,223,207,0.78));
+  border: 1px solid rgba(94, 107, 79, 0.22);
+  background: linear-gradient(180deg, rgba(227,234,220,0.92), rgba(215,223,207,0.80));
   color: rgba(47, 52, 55, 0.86);
   cursor: pointer;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.06);
 }
 
 .ctrlr-sampleBtn:hover {
@@ -160,72 +160,81 @@
 .ctrlr-center {
   display: grid;
   place-items: center;
-  padding: 90px 0 44px;
+  padding: 86px 0 44px;
 }
 
 /* ---------- Cards ---------- */
 .ctrlr-dropCard {
   width: 100%;
-  max-width: 1100px;
-  min-height: 480px;
   border-radius: 24px;
   background: var(--card-strong);
   border: 1px solid rgba(0,0,0,0.07);
-  box-shadow: 0 34px 92px rgba(0,0,0,0.15);
+  box-shadow: 0 34px 92px rgba(0,0,0,0.14);
   backdrop-filter: blur(14px);
-  padding: 28px;
+  padding: 22px;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .ctrlr-dropCard--over {
   transform: translateY(-2px);
-  box-shadow: 0 42px 110px rgba(0,0,0,0.17);
+  box-shadow: 0 42px 110px rgba(0,0,0,0.16);
   border-color: rgba(94, 107, 79, 0.40);
 }
 
 .ctrlr-dropInset {
   border-radius: 18px;
-  border: 2.5px dashed rgba(94, 107, 79, 0.28);
-  background: rgba(255,255,255,0.56);
-  padding: 76px 40px 56px;
+  border: 2px dashed rgba(94, 107, 79, 0.22);
+  background: rgba(255,255,255,0.58);
+  padding: 64px 40px 46px;
   text-align: center;
   box-shadow: 0 18px 48px rgba(0,0,0,0.10);
 }
 
+.ctrlr-dropInset--tight {
+  padding: 40px 26px 28px;
+}
+
 .ctrlr-dropArt {
-  width: 500px;
+  width: 430px;
   height: auto;
-  margin: 16px auto 30px;
+  margin: 10px auto 26px;
   opacity: 0.98;
   user-select: none;
   -webkit-user-drag: none;
 }
 
 .ctrlr-title {
-  font-size: 48px;
-  font-weight: 650;
-  letter-spacing: -0.8px;
-  margin: 8px 0 14px;
-  color: rgba(47, 52, 55, 0.86);
+  font-size: 44px;
+  font-weight: 720;
+  letter-spacing: -0.9px;
+  margin: 8px 0 12px;
+  color: rgba(47, 52, 55, 0.88);
 }
 
 .ctrlr-subtitle {
-  margin: 0 auto 26px;
+  margin: 0 auto 22px;
   max-width: 720px;
-  font-size: 24px;
+  font-size: 20px;
   line-height: 1.55;
-  color: rgba(47, 52, 55, 0.60);
+  color: rgba(47, 52, 55, 0.62);
+}
+
+.ctrlr-heroActions {
+  display: grid;
+  gap: 12px;
+  place-items: center;
+  margin-top: 6px;
 }
 
 .ctrlr-browseBtn {
-  border: 1px solid rgba(94, 107, 79, 0.30);
-  background: linear-gradient(180deg, rgba(127,143,106,0.88), rgba(94,107,79,0.80));
-  color: rgba(255, 255, 255, 0.94);
-  font-size: 28px;
-  padding: 28px 48px;
-  border-radius: 12px;
+  border: 1px solid rgba(94, 107, 79, 0.28);
+  background: linear-gradient(180deg, rgba(127,143,106,0.90), rgba(94,107,79,0.82));
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 22px;
+  padding: 18px 26px;
+  border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 14px 32px rgba(0,0,0,0.12);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.12);
   transition: transform 120ms ease, filter 120ms ease;
 }
 
@@ -234,214 +243,262 @@
   transform: translateY(-1px);
 }
 
+.ctrlr-ghostBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: rgba(47, 52, 55, 0.62);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.ctrlr-ghostBtn:hover {
+  color: rgba(47, 52, 55, 0.82);
+}
+
 .ctrlr-hiddenInput {
   display: none;
 }
 
 .ctrlr-meta {
   margin-top: 18px;
-  font-size: 24px;
+  font-size: 16px;
   color: rgba(47, 52, 55, 0.56);
 }
 
 .ctrlr-meta b {
-  color: rgba(47, 52, 55, 0.70);
-  font-weight: 650;
+  color: rgba(47, 52, 55, 0.72);
+  font-weight: 700;
 }
 
 .ctrlr-filePill {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 18px 13px;
+  padding: 12px 12px;
   border-radius: 999px;
   background: rgba(227,234,220,0.65);
-  border: 1px solid rgba(94,107,79,0.22);
-  color: rgba(47, 52, 55, 0.75);
+  border: 1px solid rgba(94,107,79,0.18);
+  color: rgba(47, 52, 55, 0.78);
+  max-width: 100%;
 }
 
 .ctrlr-filePill button {
   border: none;
   background: rgba(255,255,255,0.55);
   border: 1px solid rgba(0,0,0,0.08);
-  font-size: 20px;
-  width: 48px;
-  height: 48px;
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   cursor: pointer;
   line-height: 1;
 }
 
 .ctrlr-tagline {
-  margin-top: 76px;
-  font-size: 24px;
-  color: rgba(47, 52, 55, 0.50);
+  margin-top: 58px;
+  font-size: 18px;
+  color: rgba(47, 52, 55, 0.52);
 }
 
-
+/* --------- LAYOUT --------- */
 .ctrlr-stage2 {
   width: 100%;
-  display: flex;
+  display: grid;
   justify-content: center;
-  align-items: flex-start;
-  gap: 28px;
-  transition: padding 420ms ease, justify-content 420ms ease;
-}
-
-.ctrlr-leftCard {
-  width: 100%;
-  max-width: 1100px;
-  transition: max-width 420ms ease;
-}
-
-/* Convert mode: move layout left */
-.ctrlr-stage2--convert {
-  justify-content: flex-start;
-  padding-left: 90px;
-}
-
-/* Make left card skinnier only in convert mode */
-.ctrlr-stage2--convert .ctrlr-leftCard {
-  max-width: 720px;
-}
-
-/* Optional: tighten inset padding in convert mode */
-.ctrlr-stage2--convert .ctrlr-leftCard .ctrlr-dropInset {
-  padding-left: 48px;
-  padding-right: 48px;
-}
-
-/* Make art smaller in convert mode so left doesn't feel huge */
-.ctrlr-stage2--convert .ctrlr-leftCard .ctrlr-dropArt {
-  width: 360px;
-}
-
-/* ---------------------------------- */
-/* RIGHT SIDE STACK (convert only)    */
-/* ---------------------------------- */
-
-.ctrlr-rightStack {
-  width: 100%;
-  max-width: 520px;
-  display: flex;
-  flex-direction: column;
+  align-items: start;
   gap: 18px;
 }
 
-/* Right card: let it size naturally (not forced tall) */
+.ctrlr-leftCard {
+  width: min(980px, 100%);
+}
+
+/* convert layout */
+.ctrlr-stage2--convert {
+  grid-template-columns: minmax(460px, 720px) minmax(320px, 520px);
+  column-gap: 56px;
+  width: min(1320px, 100%);
+}
+
+.ctrlr-stage2--convert .ctrlr-leftCard {
+  width: 100%;
+}
+
+/* ---------------------------------- */
+/* ✅ RIGHT SIDE: sticky + scrollable  */
+/* ---------------------------------- */
+.ctrlr-rightStack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  position: sticky;
+  top: 110px; /* below header */
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+  padding-right: 6px; /* prevents scrollbar overlay */
+}
+
 .ctrlr-rightCard,
 .ctrlr-infoCard {
   min-height: unset;
 }
 
-/* Slightly tighter inset for right cards */
-.ctrlr-rightCard .ctrlr-dropInset {
-  padding-top: 44px;
-  padding-bottom: 36px;
-}
-
 /* ---------------------------------- */
 /* CONVERSION CARD CONTENT STYLES     */
 /* ---------------------------------- */
+.ctrlr-cardTop {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.ctrlr-miniHint {
+  font-size: 13px;
+  color: rgba(47, 52, 55, 0.60);
+}
 
 .ctrlr-titleSmall {
-  font-size: 28px;
-  margin-bottom: 18px;
+  font-size: 24px;
+  margin: 0;
 }
 
 .ctrlr-inlineRow {
-  font-size: 20px;
+  font-size: 16px;
   display: grid;
-  align-items: center;
+  align-items: end;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin: 14px 0 10px;
+  gap: 12px;
+  margin: 14px 0 8px;
 }
 
 .ctrlr-field {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
 .ctrlr-formLabel {
-  font-size: 25px;
-  font-weight: 600;
-  opacity: 0.75;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.78;
 }
 
 .ctrlr-formValue {
-  font-weight: 700;
+  font-weight: 800;
   color: rgba(47, 52, 55, 0.86);
 }
 
 .ctrlr-pillValue {
   display: inline-flex;
   align-items: center;
-  padding: 10px 12px;
+  padding: 9px 12px;
   border-radius: 999px;
   background: rgba(227,234,220,0.55);
-  border: 1px solid rgba(94,107,79,0.20);
-  font-weight: 750;
+  border: 1px solid rgba(94,107,79,0.18);
+  font-weight: 800;
 }
 
 .ctrlr-select {
-  font-size: 24px;
+  font-size: 16px;
   width: 100%;
-  padding: 12px 14px;
+  padding: 12px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.75);
   outline: none;
 }
 
 .ctrlr-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ctrlr-actions--result {
+  margin-top: 10px;
 }
 
 .ctrlr-primaryBtn,
 .ctrlr-secondaryBtn {
   border: none;
-  border-radius: 34px;
-  padding: 16px 14px;
-  font-size: 26px;
+  border-radius: 999px;
+  padding: 13px 14px;
+  font-size: 16px;
   cursor: pointer;
 }
 
 .ctrlr-primaryBtn {
   flex: 1;
-  border: 1px solid rgba(94, 107, 79, 0.30);
-  background: linear-gradient(180deg, rgba(127,143,106,0.88), rgba(94,107,79,0.80));
-  color: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 14px 32px rgba(0,0,0,0.10);
+  border: 1px solid rgba(94, 107, 79, 0.26);
+  background: linear-gradient(180deg, rgba(127,143,106,0.90), rgba(94,107,79,0.82));
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.10);
 }
 
 .ctrlr-secondaryBtn {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0,0,0,0.08);
-  color: rgba(47, 52, 55, 0.78);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0,0,0,0.10);
+  color: rgba(47, 52, 55, 0.80);
 }
 
 .ctrlr-primaryBtn:disabled,
-.ctrlr-select:disabled {
-  opacity: 0.5;
+.ctrlr-select:disabled,
+.ctrlr-secondaryBtn:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
+/* Alerts */
+.ctrlr-alert {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  text-align: left;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.72);
+  color: rgba(47,52,55,0.82);
+}
 
+.ctrlr-alert--success {
+  border-color: rgba(94,107,79,0.22);
+  background: rgba(227,234,220,0.60);
+}
+
+.ctrlr-alert--error {
+  border-color: rgba(180, 60, 60, 0.28);
+  background: rgba(255, 235, 235, 0.72);
+  color: rgba(110, 30, 30, 0.86);
+}
+
+.ctrlr-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: 8px;
+  vertical-align: -1px;
+  background: rgba(94,107,79,0.90);
+}
+
+/* ---------------------------------- */
+/* About this file card               */
+/* ---------------------------------- */
 .ctrlr-infoCard {
-  padding: 22px;
+  padding: 18px;
 }
 
 .ctrlr-infoInset {
   border-radius: 18px;
-  background: rgba(255,255,255,0.56);
-  border: 1px solid rgba(94,107,79,0.18);
+  background: rgba(255,255,255,0.58);
+  border: 1px solid rgba(94,107,79,0.16);
   box-shadow: 0 18px 48px rgba(0,0,0,0.10);
-  padding: 22px 22px 18px;
+  padding: 18px 18px 16px;
   text-align: left;
 }
 
@@ -452,41 +509,40 @@
 }
 
 .ctrlr-infoIcon {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   display: grid;
   place-items: center;
   background: rgba(227,234,220,0.65);
-  border: 1px solid rgba(94,107,79,0.20);
+  border: 1px solid rgba(94,107,79,0.18);
 }
 
 .ctrlr-infoTitle {
   margin: 0;
-  font-size: 32px;
-  font-weight: 750;
-  color: rgba(47, 52, 55, 0.86);
+  font-size: 22px;
+  font-weight: 860;
+  color: rgba(47, 52, 55, 0.88);
   letter-spacing: -0.3px;
 }
 
 .ctrlr-infoDivider {
   height: 1px;
   background: rgba(0,0,0,0.08);
-  margin: 14px 0;
+  margin: 12px 0;
 }
 
 .ctrlr-infoBlock {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   padding: 2px 0;
 }
 
 .ctrlr-infoLabel {
-  font-size: 20px;
+  font-size: 12px;
   letter-spacing: 0.2px;
-  font-weight: 700;
-  color: rgba(47, 52, 55, 0.62);
-  text-transform: none;
+  font-weight: 800;
+  color: rgba(47, 52, 55, 0.60);
 }
 
 .ctrlr-infoPill {
@@ -494,42 +550,150 @@
   align-items: center;
   width: fit-content;
   max-width: 100%;
-  padding: 10px 14px;
+  padding: 9px 12px;
   border-radius: 999px;
   background: rgba(227,234,220,0.70);
-  border: 1px solid rgba(94,107,79,0.18);
-  color: rgba(47, 52, 55, 0.82);
-  font-weight: 750;
+  border: 1px solid rgba(94,107,79,0.16);
+  color: rgba(47, 52, 55, 0.84);
+  font-weight: 820;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ctrlr-infoText {
-  color: rgba(47, 52, 55, 0.70);
-  font-size: 20px;
-  line-height: 1.5;
+  color: rgba(47, 52, 55, 0.72);
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .ctrlr-infoTwoCol {
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 14px;
 }
 
 .ctrlr-infoStrong {
-  font-size: 20px;
-  font-weight: 800;
-  color: rgba(47, 52, 55, 0.82);
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(47, 52, 55, 0.84);
 }
 
 .ctrlr-infoLogo {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
   opacity: 0.95;
 }
 
+/* ---------------------------------- */
+/* ✅ PREVIEW STYLES (scrollable box) */
+/* ---------------------------------- */
+.ctrlr-previewWrap {
+  text-align: left;
+}
+
+.ctrlr-previewHeader {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.ctrlr-previewTitle {
+  font-size: 22px;
+  font-weight: 860;
+  letter-spacing: -0.2px;
+  color: rgba(47, 52, 55, 0.90);
+}
+
+.ctrlr-previewMeta {
+  font-size: 13px;
+  color: rgba(47, 52, 55, 0.58);
+}
+
+/* key: give it a fixed-ish height and make internal content fill it */
+.ctrlr-previewFrame {
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.72);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.08);
+
+  height: clamp(320px, 52vh, 560px);
+  overflow: auto;
+  display: block;
+  padding: 0;
+}
+
+.ctrlr-previewImg {
+  width: 100%;
+  height: auto;
+  display: block;
+  padding: 14px;
+}
+
+.ctrlr-previewPdf {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.ctrlr-previewText {
+  width: 100%;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(47, 52, 55, 0.86);
+  background: transparent;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ctrlr-previewEmpty {
+  padding: 34px 18px;
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.ctrlr-previewEmptyIcon {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.ctrlr-previewEmptyTitle {
+  font-size: 18px;
+  font-weight: 860;
+  margin-bottom: 6px;
+  color: rgba(47, 52, 55, 0.86);
+}
+
+.ctrlr-previewEmptySub {
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(47, 52, 55, 0.60);
+}
+
 /* ---------- Responsive tweaks ---------- */
+@media (max-width: 980px) {
+  .ctrlr-stage2--convert {
+    grid-template-columns: 1fr;
+    column-gap: 18px;
+  }
+
+  .ctrlr-rightStack {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .ctrlr-previewFrame {
+    height: 460px;
+  }
+}
+
 @media (max-width: 720px) {
   .ctrlr-topbarInner {
     padding: 0 18px;
@@ -557,27 +721,11 @@
   }
 
   .ctrlr-dropArt {
-    width: 180px;
+    width: 190px;
   }
 
-  /* Stack naturally on mobile */
-  .ctrlr-stage2 {
-    flex-direction: column;
-    align-items: center;
-    padding-left: 0;
-  }
-
-  .ctrlr-stage2--convert {
-    justify-content: center;
-    padding-left: 0;
-  }
-
-  .ctrlr-leftCard {
-    max-width: 94vw;
-  }
-
-  .ctrlr-rightStack {
-    max-width: 94vw;
+  .ctrlr-dropInset {
+    padding: 44px 18px 34px;
   }
 
   .ctrlr-inlineRow {
@@ -587,5 +735,4 @@
   .ctrlr-infoTwoCol {
     grid-template-columns: 1fr;
   }
-
 }

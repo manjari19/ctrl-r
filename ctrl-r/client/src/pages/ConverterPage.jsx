@@ -1,5 +1,5 @@
 // File: src/pages/ConverterPage.jsx
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import "./ConverterPage.css";
 import { acceptedfiletypes_dictionary } from "./../backend/dict.js";
 import { File_Labels, File_Desc } from "./../backend/filedescs.js";
@@ -39,13 +39,10 @@ function pickDefaultOutput(inputExt, outputs) {
 }
 
 async function copyToClipboard(text) {
-  // Modern clipboard API
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
     return true;
   }
-
-  // Fallback
   const ta = document.createElement("textarea");
   ta.value = text;
   ta.setAttribute("readonly", "");
@@ -58,14 +55,25 @@ async function copyToClipboard(text) {
   return ok;
 }
 
+// Preview helpers
+function isImageExt(ext) {
+  return ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "tif", "tiff"].includes(ext);
+}
+function isTextExt(ext) {
+  return ["txt", "md", "csv", "log", "xml", "json", "html", "htm"].includes(ext);
+}
+function isPdfExt(ext) {
+  return ext === "pdf";
+}
+
 export default function ConverterPage() {
   const inputRef = useRef(null);
+
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
 
   // "upload" | "convert"
   const [step, setStep] = useState("upload");
-
   const [targetFormat, setTargetFormat] = useState("pdf");
 
   // conversion result state
@@ -73,6 +81,16 @@ export default function ConverterPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [resultUrl, setResultUrl] = useState("");
   const [copied, setCopied] = useState(false);
+
+  // converted preview state
+  const [convertedTextPreview, setConvertedTextPreview] = useState("");
+
+  // Accept string derived from dictionary keys (no hardcoding)
+  const ACCEPTED_EXTENSIONS = useMemo(() => {
+    return Object.keys(acceptedfiletypes_dictionary || {})
+      .map((ext) => `.${String(ext).toLowerCase()}`)
+      .join(",");
+  }, []);
 
   const fileExt = useMemo(() => {
     if (!file?.name) return "";
@@ -98,7 +116,6 @@ export default function ConverterPage() {
   const availableOutputs = useMemo(() => {
     if (!file) return ["pdf"];
     const outs = acceptedfiletypes_dictionary[fileExt] || ["pdf"];
-    // don’t allow output == input (prevents wpd->wpd etc.)
     const filtered = outs.filter(
       (x) => String(x).toLowerCase() !== String(fileExt).toLowerCase()
     );
@@ -110,6 +127,7 @@ export default function ConverterPage() {
     setErrorMsg("");
     setResultUrl("");
     setCopied(false);
+    setConvertedTextPreview("");
   };
 
   const onFiles = (files) => {
@@ -132,6 +150,7 @@ export default function ConverterPage() {
     setErrorMsg("");
     setResultUrl("");
     setCopied(false);
+    setConvertedTextPreview("");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -148,7 +167,6 @@ export default function ConverterPage() {
       if (!response.ok) {
         throw new Error(payload?.error || payload?.message || response.statusText);
       }
-
       if (!payload?.url) {
         throw new Error("No URL returned from server.");
       }
@@ -162,6 +180,32 @@ export default function ConverterPage() {
       setIsConverting(false);
     }
   };
+
+  // If converted output is text-like, fetch a small snippet for preview (best-effort)
+  useEffect(() => {
+    let alive = true;
+
+    async function loadConvertedTextSnippet() {
+      setConvertedTextPreview("");
+      if (!resultUrl) return;
+      if (!isTextExt(targetFormat)) return;
+
+      try {
+        const res = await fetch(resultUrl, { method: "GET" });
+        if (!res.ok) return;
+        const txt = await res.text();
+        if (!alive) return;
+        setConvertedTextPreview(txt.slice(0, 24 * 1024));
+      } catch {
+        // ignore
+      }
+    }
+
+    loadConvertedTextSnippet();
+    return () => {
+      alive = false;
+    };
+  }, [resultUrl, targetFormat]);
 
   const onBrowse = () => inputRef.current?.click();
   const onInputChange = (e) => onFiles(e.target.files);
@@ -193,9 +237,9 @@ export default function ConverterPage() {
     if (!file || isConverting) return;
     try {
       await handleUploadAndConvert();
-      // keep user on page; they can click Download/Open or Copy Link
+      // left side will automatically switch to preview because resultUrl becomes set
     } catch {
-      // errorMsg is already set
+      // errorMsg already set
     }
   };
 
@@ -209,11 +253,23 @@ export default function ConverterPage() {
     try {
       const ok = await copyToClipboard(resultUrl);
       setCopied(Boolean(ok));
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => setCopied(false), 1400);
     } catch {
       setCopied(false);
     }
   };
+
+  const removeFile = () => {
+    setFile(null);
+    setStep("upload");
+    resetResultState();
+  };
+
+  const shouldShowConvertedPreview = Boolean(file) && step === "convert" && Boolean(resultUrl);
+
+  const canPreviewConverted =
+    Boolean(resultUrl) &&
+    (isPdfExt(targetFormat) || isImageExt(targetFormat) || isTextExt(targetFormat));
 
   return (
     <div className="ctrlr-page">
@@ -253,11 +309,7 @@ export default function ConverterPage() {
 
       <div className="ctrlr-shell">
         <main className="ctrlr-center">
-          <div
-            className={
-              "ctrlr-stage2 " + (step === "convert" ? "ctrlr-stage2--convert" : "")
-            }
-          >
+          <div className={"ctrlr-stage2 " + (step === "convert" ? "ctrlr-stage2--convert" : "")}>
             {/* LEFT CARD */}
             <section
               className={
@@ -269,61 +321,131 @@ export default function ConverterPage() {
               onDrop={onDrop}
             >
               <div className="ctrlr-dropInset">
-                <img
-                  className="ctrlr-dropArt"
-                  src={dropArt}
-                  alt="File + clock illustration"
-                />
+                {shouldShowConvertedPreview ? (
+                  <div className="ctrlr-previewWrap">
+                    <div className="ctrlr-previewHeader">
+                      <div className="ctrlr-previewTitle">Preview</div>
+                      <div className="ctrlr-previewMeta">
+                        Output: {String(targetFormat).toUpperCase()}
+                      </div>
+                    </div>
 
-                <h1 className="ctrlr-title">
-                  {file ? "Ready to revive this file" : "Drag & drop a legacy file"}
-                </h1>
+                    <div className="ctrlr-previewFrame" role="region" aria-label="Converted file preview">
+                      {canPreviewConverted ? (
+                        <>
+                          {isImageExt(targetFormat) && (
+                            <img
+                              className="ctrlr-previewImg"
+                              src={resultUrl}
+                              alt="Converted output preview"
+                            />
+                          )}
 
-                <p className="ctrlr-subtitle">
-                  {file ? "Next step: conversion." : "Your files — converted in seconds."}
-                </p>
+                          {isPdfExt(targetFormat) && (
+                            <iframe
+                              className="ctrlr-previewPdf"
+                              title="Converted PDF preview"
+                              src={resultUrl}
+                            />
+                          )}
 
-                {file ? (
-                  <button
-                    className="ctrlr-browseBtn ctrlr-convertBtn"
-                    onClick={onConvert}
-                  >
-                    Ready To Convert <span aria-hidden="true">➜</span>
-                  </button>
+                          {isTextExt(targetFormat) && (
+                            <pre className="ctrlr-previewText">
+                              {convertedTextPreview || "Loading preview…"}
+                            </pre>
+                          )}
+                        </>
+                      ) : (
+                        <div className="ctrlr-previewEmpty">
+                          <div className="ctrlr-previewEmptyIcon" aria-hidden="true">
+                            👀
+                          </div>
+                          <div className="ctrlr-previewEmptyTitle">Preview not available</div>
+                          <div className="ctrlr-previewEmptySub">
+                            This output format can’t be previewed in-browser. Use{" "}
+                            <b>Open / Download</b>.
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ) : (
-                  <button className="ctrlr-browseBtn" onClick={onBrowse}>
-                    Browse files <span aria-hidden="true">➜</span>
-                  </button>
+                  <>
+                    <img
+                      className="ctrlr-dropArt"
+                      src={dropArt}
+                      alt="File + clock illustration"
+                    />
+
+                    <h1 className="ctrlr-title">
+                      {file ? "Ready to revive this file" : "Drag & drop a legacy file"}
+                    </h1>
+
+                    <p className="ctrlr-subtitle">
+                      {file
+                        ? isConverting
+                          ? "Processing… hang tight."
+                          : "Next step: conversion."
+                        : "Old formats back to life — in seconds."}
+                    </p>
+                  </>
                 )}
+
+                <div className="ctrlr-heroActions">
+                  {file ? (
+                    <button
+                      className="ctrlr-browseBtn ctrlr-convertBtn"
+                      onClick={onConvert}
+                      disabled={isConverting}
+                      title={isConverting ? "Conversion in progress" : "Go to conversion"}
+                    >
+                      {isConverting ? "Processing…" : "Ready to convert"}{" "}
+                      <span aria-hidden="true">➜</span>
+                    </button>
+                  ) : (
+                    <button className="ctrlr-browseBtn" onClick={onBrowse}>
+                      Browse files <span aria-hidden="true">➜</span>
+                    </button>
+                  )}
+
+                  {file && (
+                    <button
+                      className="ctrlr-ghostBtn"
+                      type="button"
+                      onClick={removeFile}
+                      disabled={isConverting}
+                      title={isConverting ? "Wait for conversion to finish" : "Choose another file"}
+                    >
+                      Choose a different file
+                    </button>
+                  )}
+                </div>
 
                 <input
                   ref={inputRef}
                   type="file"
                   className="ctrlr-hiddenInput"
-                  accept=".wpd,.wp,.xls,.ods,.dwg,.doc,.docx"
+                  accept={ACCEPTED_EXTENSIONS}
                   onChange={onInputChange}
                 />
 
                 <div className="ctrlr-meta">
                   {file ? (
-                    <span className="ctrlr-filePill">
-                      {file.name}{" "}
+                    <span className="ctrlr-filePill" title={file.name}>
+                      {file.name}
                       <button
                         type="button"
                         aria-label="Remove file"
-                        onClick={() => {
-                          setFile(null);
-                          setStep("upload");
-                          resetResultState();
-                        }}
+                        onClick={removeFile}
+                        disabled={isConverting}
+                        title={isConverting ? "Wait for conversion to finish" : "Remove file"}
                       >
                         ×
                       </button>
                     </span>
                   ) : (
                     <span>
-                      Supported <b>.wpd</b>, <b>.xls</b>, <b>.ods</b>, <b>.dwg</b> •
-                      Privacy unlimited.
+                      Supports <b>50+</b> formats • Documents, spreadsheets, images, CAD, and more.
                     </span>
                   )}
                 </div>
@@ -334,17 +456,18 @@ export default function ConverterPage() {
             {step === "convert" && (
               <aside className="ctrlr-rightStack" aria-live="polite">
                 <section className="ctrlr-dropCard ctrlr-rightCard">
-                  <div className="ctrlr-dropInset">
-                    <h2 className="ctrlr-title ctrlr-titleSmall">Conversion options</h2>
+                  <div className="ctrlr-dropInset ctrlr-dropInset--tight">
+                    <div className="ctrlr-cardTop">
+                      <h2 className="ctrlr-title ctrlr-titleSmall">Conversion</h2>
+                      <div className="ctrlr-miniHint">
+                        Pick a format, hit convert. That’s it.
+                      </div>
+                    </div>
 
                     <div className="ctrlr-inlineRow">
                       <div className="ctrlr-field">
                         <div className="ctrlr-formLabel">Detected</div>
-                        <div
-                          className={
-                            "ctrlr-formValue " + (file ? "ctrlr-pillValue" : "")
-                          }
-                        >
+                        <div className={"ctrlr-formValue " + (file ? "ctrlr-pillValue" : "")}>
                           {file ? detectedType : "—"}
                         </div>
                       </div>
@@ -359,7 +482,8 @@ export default function ConverterPage() {
                           className="ctrlr-select"
                           value={targetFormat}
                           onChange={(e) => setTargetFormat(e.target.value)}
-                          disabled={!file || isConverting}
+                          disabled={!file || isConverting || Boolean(resultUrl)}
+                          title={resultUrl ? "Choose a different file to convert again" : ""}
                         >
                           {availableOutputs.map((fmt) => (
                             <option key={fmt} value={fmt}>
@@ -370,67 +494,38 @@ export default function ConverterPage() {
                       </div>
                     </div>
 
-                    {/* Status + actions */}
-                    {errorMsg && (
-                      <p style={{ marginTop: 10 }}>
-                        <b>Error:</b> {errorMsg}
-                      </p>
-                    )}
+                    {errorMsg && <div className="ctrlr-alert ctrlr-alert--error">{errorMsg}</div>}
 
-                    {resultUrl && (
-                      <div style={{ marginTop: 12 }}>
-                        <p style={{ marginBottom: 8 }}>
-                          <b>Converted file:</b>{" "}
-                          <a href={resultUrl} target="_blank" rel="noreferrer">
-                            {resultUrl}
-                          </a>
-                        </p>
-
-                        <div className="ctrlr-actions">
-                          <button
-                            type="button"
-                            className="ctrlr-secondaryBtn"
-                            onClick={onOpenResult}
-                          >
-                            Open / Download
-                          </button>
-
-                          <button
-                            type="button"
-                            className="ctrlr-primaryBtn"
-                            onClick={onCopyLink}
-                          >
-                            {copied ? "Copied!" : "Copy link"}
-                          </button>
-                        </div>
+                    {resultUrl && !errorMsg && (
+                      <div className="ctrlr-alert ctrlr-alert--success">
+                        <span className="ctrlr-dot" aria-hidden="true" />
+                        Converted successfully.
                       </div>
                     )}
 
-                    {/* Main actions */}
-                    <div className="ctrlr-actions" style={{ marginTop: 14 }}>
-                      <button
-                        type="button"
-                        className="ctrlr-secondaryBtn"
-                        onClick={() => setStep("upload")}
-                        disabled={isConverting}
-                      >
-                        ← Back
-                      </button>
+                    {resultUrl ? (
+                      <div className="ctrlr-actions ctrlr-actions--result">
+                        <button type="button" className="ctrlr-secondaryBtn" onClick={onOpenResult}>
+                          Open / Download
+                        </button>
 
-                      <button
-                        type="button"
-                        className="ctrlr-primaryBtn"
-                        onClick={onStartConversion}
-                        disabled={!file || isConverting}
-                      >
-                        {isConverting ? "Converting..." : "Start conversion "}
-                        <span aria-hidden="true">➜</span>
-                      </button>
-                    </div>
-
-                    <p className="ctrlr-hint">
-                      Pick an output format, then start conversion.
-                    </p>
+                        <button type="button" className="ctrlr-primaryBtn" onClick={onCopyLink}>
+                          {copied ? "Copied ✨" : "Copy link"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="ctrlr-actions" style={{ marginTop: 14 }}>
+                        <button
+                          type="button"
+                          className="ctrlr-primaryBtn"
+                          onClick={onStartConversion}
+                          disabled={!file || isConverting}
+                        >
+                          {isConverting ? "Converting…" : "Start conversion "}
+                          <span aria-hidden="true">➜</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </section>
 
@@ -454,9 +549,7 @@ export default function ConverterPage() {
 
                     <div className="ctrlr-infoBlock">
                       <div className="ctrlr-infoLabel">File type</div>
-                      <div className="ctrlr-infoText">
-                        {file ? typeDescription : "—"}
-                      </div>
+                      <div className="ctrlr-infoText">{file ? typeDescription : "—"}</div>
                     </div>
 
                     <div className="ctrlr-infoDivider" />
