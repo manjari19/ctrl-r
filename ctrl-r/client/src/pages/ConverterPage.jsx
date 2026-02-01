@@ -417,6 +417,19 @@ export default function ConverterPage() {
     resetResultState();
   };
 
+  const onBrandClick = () => {
+    setStep("upload");
+    setFile(null);
+    resetResultState();
+    if (typeof window !== "undefined") {
+      try {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch {
+        window.scrollTo(0, 0);
+      }
+    }
+  };
+
   const shouldShowConvertedPreview =
     Boolean(file) && step === "convert" && Boolean(previewUrl);
 
@@ -437,13 +450,17 @@ export default function ConverterPage() {
 
       <header className="ctrlr-topbar">
         <div className="ctrlr-topbarInner">
-          <div className="ctrlr-brand">
+          <button
+            type="button"
+            className="ctrlr-brand ctrlr-brandButton"
+            onClick={onBrandClick}
+          >
             <img className="ctrlr-logo" src={logo} alt="ctrl-r logo" />
             <span className="ctrlr-name" aria-label="ctrl-r">
               <span className="ctrlr-nameMain">ctrl</span>
               <span className="ctrlr-nameAccent">-r</span>
             </span>
-          </div>
+          </button>
 
         </div>
       </header>
